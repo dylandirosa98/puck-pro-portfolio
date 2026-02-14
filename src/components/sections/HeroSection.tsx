@@ -26,7 +26,7 @@ export default function HeroSection({ player }: HeroSectionProps) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        <div className="relative w-[80%] max-w-[360px] h-[90%]">
+        <div className="relative w-[96%] max-w-[430px] h-[90%]">
           <Image
             src={player.heroImageUrl}
             alt={`${player.firstName} ${player.lastName}`}
