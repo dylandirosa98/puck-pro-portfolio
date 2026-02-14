@@ -10,11 +10,12 @@ interface HeroSectionProps {
 
 export default function HeroSection({ player }: HeroSectionProps) {
   return (
-    <section className="relative min-h-[50svh] flex items-end overflow-hidden">
-      {/* Gradient background — extends above section to cover iOS safe area */}
+    <section className="relative min-h-[50svh] flex items-end overflow-hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+      {/* Gradient background — covers full area including iOS safe area */}
       <div
-        className="absolute -top-20 left-0 right-0 bottom-0"
+        className="absolute inset-0"
         style={{
+          top: "calc(-1 * env(safe-area-inset-top, 0px))",
           background: `linear-gradient(to bottom, ${player.themeColor}40 0%, ${player.themeColor}20 40%, #0a0a0a 100%)`,
         }}
       />
@@ -58,24 +59,6 @@ export default function HeroSection({ player }: HeroSectionProps) {
             {player.number}
           </motion.span>
 
-          {/* Position & Team */}
-          <motion.div
-            className="flex items-center gap-2 mb-3"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <span
-              className="text-xs font-bold tracking-[0.2em] uppercase px-2 py-1 rounded"
-              style={{ backgroundColor: player.themeColor }}
-            >
-              {player.position}
-            </span>
-            <span className="text-xs font-bold tracking-[0.2em] text-white/80 uppercase bg-black/30 backdrop-blur-sm px-2 py-1 rounded">
-              {player.team}
-            </span>
-          </motion.div>
-
           {/* Name */}
           <h1 className="text-5xl sm:text-7xl font-black leading-[0.9] tracking-tight">
             <span className="block text-white/60 text-2xl sm:text-3xl font-medium mb-1">
@@ -97,11 +80,29 @@ export default function HeroSection({ player }: HeroSectionProps) {
             <span>|</span>
             <span>Shoots {player.shoots}</span>
           </motion.div>
+
+          {/* Position & Team */}
+          <motion.div
+            className="flex items-center gap-2 mt-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.55 }}
+          >
+            <span
+              className="text-[10px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
+              style={{ backgroundColor: player.themeColor }}
+            >
+              {player.position}
+            </span>
+            <span className="text-[10px] font-semibold tracking-wider text-white/60 uppercase">
+              {player.team}
+            </span>
+          </motion.div>
         </motion.div>
 
         {/* CTA Buttons */}
         <motion.div
-          className="flex gap-3 mt-6"
+          className="flex gap-3 mt-5"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
