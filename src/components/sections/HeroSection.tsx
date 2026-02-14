@@ -74,35 +74,17 @@ export default function HeroSection({ player }: HeroSectionProps) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <span>{player.hometown}</span>
+            <span>{player.position}</span>
             <span>|</span>
             <span>{player.height}</span>
             <span>|</span>
             <span>Shoots {player.shoots}</span>
           </motion.div>
-
-          {/* Position & Team */}
-          <motion.div
-            className="flex items-center gap-2 mt-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.55 }}
-          >
-            <span
-              className="text-[10px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
-              style={{ backgroundColor: player.themeColor }}
-            >
-              {player.position}
-            </span>
-            <span className="text-[10px] font-semibold tracking-wider text-white/60 uppercase">
-              {player.team}
-            </span>
-          </motion.div>
         </motion.div>
 
         {/* CTA Buttons */}
         <motion.div
-          className="flex gap-3 mt-5"
+          className="flex gap-3 mt-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
