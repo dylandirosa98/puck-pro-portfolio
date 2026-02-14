@@ -11,9 +11,9 @@ interface HeroSectionProps {
 export default function HeroSection({ player }: HeroSectionProps) {
   return (
     <section className="relative min-h-[50svh] flex items-end overflow-hidden">
-      {/* Gradient background */}
+      {/* Gradient background — extends above section to cover iOS safe area */}
       <div
-        className="absolute inset-0"
+        className="absolute -top-20 left-0 right-0 bottom-0"
         style={{
           background: `linear-gradient(to bottom, ${player.themeColor}40 0%, ${player.themeColor}20 40%, #0a0a0a 100%)`,
         }}
@@ -26,7 +26,7 @@ export default function HeroSection({ player }: HeroSectionProps) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        <div className="relative w-[96%] max-w-[430px] h-[90%]">
+        <div className="relative w-full max-w-[440px] h-[95%]">
           <Image
             src={player.heroImageUrl}
             alt={`${player.firstName} ${player.lastName}`}
