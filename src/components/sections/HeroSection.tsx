@@ -4,19 +4,33 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Player } from "@/lib/types";
 
+function blendColor(hex: string, opacity: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const bg = 10; // #0a
+  const br = Math.round(bg + (r - bg) * opacity);
+  const bgr = Math.round(bg + (g - bg) * opacity);
+  const bb = Math.round(bg + (b - bg) * opacity);
+  return `#${br.toString(16).padStart(2, "0")}${bgr.toString(16).padStart(2, "0")}${bb.toString(16).padStart(2, "0")}`;
+}
+
 interface HeroSectionProps {
   player: Player;
 }
 
 export default function HeroSection({ player }: HeroSectionProps) {
+  const topColor = blendColor(player.themeColor, 0.251);
+  const midColor = blendColor(player.themeColor, 0.125);
+
   return (
     <section className="relative min-h-[50svh] flex items-end overflow-hidden" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-      {/* Gradient background — covers full area including iOS safe area */}
+      {/* Gradient background — solid block at top matches theme-color exactly, then fades */}
       <div
         className="absolute inset-0"
         style={{
           top: "calc(-1 * env(safe-area-inset-top, 0px))",
-          background: `linear-gradient(to bottom, ${player.themeColor}40 0%, ${player.themeColor}20 40%, #0a0a0a 100%)`,
+          background: `linear-gradient(to bottom, ${topColor} 0px, ${topColor} 44px, ${midColor} 40%, #0a0a0a 100%)`,
         }}
       />
 
