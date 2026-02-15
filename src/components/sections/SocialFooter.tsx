@@ -38,7 +38,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
 
 export default function SocialFooter({ socialLinks }: SocialFooterProps) {
   return (
-    <footer className="px-5 py-12 pb-20">
+    <footer className="px-5 py-12 pb-20 lg:max-w-4xl lg:mx-auto lg:py-16 lg:pb-20">
       <motion.div
         className="text-center"
         initial={{ opacity: 0, y: 20 }}
@@ -47,14 +47,14 @@ export default function SocialFooter({ socialLinks }: SocialFooterProps) {
         transition={{ duration: 0.5 }}
       >
         {/* Social icons */}
-        <div className="flex justify-center gap-4 mb-8">
+        <div className="flex justify-center gap-4 lg:gap-5 mb-8">
           {socialLinks.map((link, i) => (
             <motion.a
               key={link.platform}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+              className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

@@ -46,9 +46,9 @@ const statItems: { key: keyof PlayerStats; label: string; suffix?: string }[] = 
 
 export default function StatsBar({ stats }: StatsBarProps) {
   return (
-    <section className="px-5 pt-6 pb-2">
+    <section className="px-5 pt-6 pb-2 lg:max-w-4xl lg:mx-auto lg:pt-10 lg:pb-4">
       <motion.div
-        className="grid grid-cols-6 gap-1"
+        className="grid grid-cols-6 gap-1 lg:gap-3"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -57,16 +57,16 @@ export default function StatsBar({ stats }: StatsBarProps) {
         {statItems.map((item, i) => (
           <motion.div
             key={item.key}
-            className="flex flex-col items-center justify-center bg-white/5 rounded-lg py-3"
+            className="flex flex-col items-center justify-center bg-white/5 rounded-lg py-3 lg:py-5 lg:rounded-xl"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: i * 0.08 }}
           >
-            <span className="text-lg font-black tabular-nums">
+            <span className="text-lg lg:text-2xl font-black tabular-nums">
               <AnimatedNumber value={stats[item.key]} suffix={item.suffix} />
             </span>
-            <span className="text-[10px] text-white/40 font-medium tracking-wider mt-1">
+            <span className="text-[10px] lg:text-xs text-white/40 font-medium tracking-wider mt-1">
               {item.label}
             </span>
           </motion.div>

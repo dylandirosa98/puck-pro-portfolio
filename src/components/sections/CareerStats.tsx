@@ -9,7 +9,7 @@ interface CareerStatsProps {
 
 export default function CareerStats({ seasons }: CareerStatsProps) {
   return (
-    <section className="px-5 py-12">
+    <section className="px-5 py-12 lg:max-w-4xl lg:mx-auto lg:py-16">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -27,8 +27,8 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
           </h2>
         </div>
 
-        {/* Stats cards (mobile-friendly stacked cards instead of table) */}
-        <div className="space-y-3">
+        {/* Mobile: Stacked cards */}
+        <div className="space-y-3 lg:hidden">
           {seasons.map((season, i) => (
             <motion.div
               key={season.season}
@@ -80,6 +80,61 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
             </motion.div>
           ))}
         </div>
+
+        {/* Desktop: Table */}
+        <motion.div
+          className="hidden lg:block"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="bg-white/5 rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-white/40">
+                  <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wider">Season</th>
+                  <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wider">Team</th>
+                  <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wider">League</th>
+                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">GP</th>
+                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">G</th>
+                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">A</th>
+                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">PTS</th>
+                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">+/-</th>
+                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">PIM</th>
+                </tr>
+              </thead>
+              <tbody>
+                {seasons.map((season, i) => (
+                  <motion.tr
+                    key={season.season}
+                    className="border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors"
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.3, delay: i * 0.08 }}
+                  >
+                    <td className="py-3 px-4 font-bold">{season.season}</td>
+                    <td className="py-3 px-4 text-white/70">{season.team}</td>
+                    <td className="py-3 px-4 text-white/50">{season.league}</td>
+                    <td className="py-3 px-3 text-center tabular-nums font-medium">{season.stats.gamesPlayed}</td>
+                    <td className="py-3 px-3 text-center tabular-nums font-medium">{season.stats.goals}</td>
+                    <td className="py-3 px-3 text-center tabular-nums font-medium">{season.stats.assists}</td>
+                    <td className="py-3 px-3 text-center tabular-nums font-bold"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      {season.stats.points}
+                    </td>
+                    <td className="py-3 px-3 text-center tabular-nums font-medium text-white/70">
+                      {season.stats.plusMinus > 0 ? "+" : ""}{season.stats.plusMinus}
+                    </td>
+                    <td className="py-3 px-3 text-center tabular-nums font-medium text-white/50">{season.stats.pim}</td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
       </motion.div>
     </section>
   );

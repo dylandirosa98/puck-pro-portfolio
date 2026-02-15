@@ -10,7 +10,7 @@ interface BioSectionProps {
 
 export default function BioSection({ player }: BioSectionProps) {
   return (
-    <section className="px-5 py-12">
+    <section className="px-5 py-12 lg:max-w-4xl lg:mx-auto lg:py-16">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -28,10 +28,10 @@ export default function BioSection({ player }: BioSectionProps) {
           </h2>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-6">
+        <div className="flex flex-col sm:flex-row gap-6 lg:gap-10">
           {/* Headshot */}
           <motion.div
-            className="relative w-28 h-28 rounded-2xl overflow-hidden flex-shrink-0 bg-white/5"
+            className="relative w-28 h-28 lg:w-40 lg:h-40 rounded-2xl overflow-hidden flex-shrink-0 bg-white/5"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -47,10 +47,10 @@ export default function BioSection({ player }: BioSectionProps) {
 
           {/* Bio text */}
           <div className="flex-1">
-            <p className="text-white/70 text-sm leading-relaxed">{player.bio}</p>
+            <p className="text-white/70 text-sm lg:text-base leading-relaxed">{player.bio}</p>
 
             {/* Quick details */}
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-5">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 lg:gap-x-10 gap-y-2 mt-5">
               {[
                 { label: "Team", value: player.team },
                 { label: "League", value: player.league },

@@ -48,3 +48,10 @@ export interface Player {
   highlightReelUrl?: string;
   resumeUrl?: string;
 }
+
+export interface PlayerWithMeta extends Player {
+  id: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
