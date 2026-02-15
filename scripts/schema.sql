@@ -65,8 +65,8 @@ values (
   'player-images',
   'player-images',
   true,
-  5242880,  -- 5MB
-  array['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  10485760,  -- 10MB
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf']
 )
 on conflict (id) do nothing;
 

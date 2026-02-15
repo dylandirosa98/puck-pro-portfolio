@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Player } from "@/lib/types";
 import VideoModal from "@/components/VideoModal";
+import PdfModal from "@/components/PdfModal";
 
 function blendColor(hex: string, opacity: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -23,6 +24,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ player }: HeroSectionProps) {
   const [showReel, setShowReel] = useState(false);
+  const [showResume, setShowResume] = useState(false);
   const topColor = blendColor(player.themeColor, 0.251);
   const midColor = blendColor(player.themeColor, 0.125);
 
@@ -119,16 +121,15 @@ export default function HeroSection({ player }: HeroSectionProps) {
               </button>
             )}
             {player.resumeUrl && (
-              <a
-                href={player.resumeUrl}
-                download
+              <button
+                onClick={() => setShowResume(true)}
                 className="flex items-center gap-1.5 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium text-white/70 border border-white/15 hover:bg-white/5 transition-colors"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                 </svg>
                 Resume
-              </a>
+              </button>
             )}
           </motion.div>
         </div>
@@ -140,6 +141,15 @@ export default function HeroSection({ player }: HeroSectionProps) {
           url={player.highlightReelUrl}
           isOpen={showReel}
           onClose={() => setShowReel(false)}
+        />
+      )}
+
+      {/* PDF Modal */}
+      {player.resumeUrl && (
+        <PdfModal
+          url={player.resumeUrl}
+          isOpen={showResume}
+          onClose={() => setShowResume(false)}
         />
       )}
     </>

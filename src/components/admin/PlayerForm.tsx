@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createPlayer, updatePlayer } from "@/lib/actions/player-actions";
 import ImageUpload from "./ImageUpload";
+import PdfUpload from "./PdfUpload";
 import type { PlayerWithMeta, PlayerStats, SeasonStats, Highlight, SocialLink } from "@/lib/types";
 
 interface PlayerFormProps {
@@ -556,12 +557,11 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             <p className="text-[10px] text-white/20 mt-1">Shows as hero button. Auto-added to Highlights on first load — edit or remove it there independently.</p>
           </div>
           <div>
-            <label className={labelClass}>Resume URL</label>
-            <input
-              className={inputClass}
-              value={resumeUrl}
-              onChange={(e) => setResumeUrl(e.target.value)}
-              placeholder="https://..."
+            <label className={labelClass}>Resume PDF</label>
+            <PdfUpload
+              slug={slug}
+              currentUrl={resumeUrl}
+              onUpload={setResumeUrl}
             />
           </div>
           <div>
