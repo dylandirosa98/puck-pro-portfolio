@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { removeBackground } from "@imgly/background-removal-node";
 import { createAdminClient } from "@/lib/supabase/admin";
+import sharp from "sharp";
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
@@ -14,9 +15,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Convert File to blob for background removal
     const arrayBuffer = await file.arrayBuffer();
-    const blob = new Blob([arrayBuffer], { type: file.type });
+
+    // Convert to PNG first — background-removal-node only supports JPEG/PNG/WebP
+    const pngBuffer = await sharp(Buffer.from(arrayBuffer)).png().toBuffer();
+    const blob = new Blob([pngBuffer], { type: "image/png" });
 
     // Remove background
     const resultBlob = await removeBackground(blob);
@@ -42,7 +45,7 @@ export async function POST(request: NextRequest) {
       .from("player-images")
       .getPublicUrl(path);
 
-    return NextResponse.json({ url: urlData.publicUrl });
+    return NextResponse.json({ url: `${urlData.publicUrl}?t=${Date.now()}` });
   } catch (err) {
     console.error("Background removal failed:", err);
     return NextResponse.json(
