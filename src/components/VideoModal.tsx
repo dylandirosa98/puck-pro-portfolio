@@ -2,7 +2,11 @@
 
 import { useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { detectVideo, getEmbedUrl } from "@/lib/video";
+import { detectVideo, getEmbedUrl, type VideoInfo } from "@/lib/video";
+
+function isFolder(video: VideoInfo) {
+  return video.platform === "gdrive-folder";
+}
 
 interface VideoModalProps {
   url: string;
@@ -13,6 +17,7 @@ interface VideoModalProps {
 export default function VideoModal({ url, isOpen, onClose }: VideoModalProps) {
   const video = detectVideo(url);
   const embedUrl = getEmbedUrl(video);
+  const folder = isFolder(video);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -58,9 +63,9 @@ export default function VideoModal({ url, isOpen, onClose }: VideoModalProps) {
             </svg>
           </button>
 
-          {/* Video */}
+          {/* Video / Folder */}
           <motion.div
-            className="relative w-full max-w-4xl aspect-video z-10 rounded-xl overflow-hidden bg-black"
+            className={`relative w-full z-10 rounded-xl overflow-hidden bg-black ${folder ? "max-w-2xl h-[70vh]" : "max-w-4xl aspect-video"}`}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}

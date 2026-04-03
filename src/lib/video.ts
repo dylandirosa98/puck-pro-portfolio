@@ -2,6 +2,8 @@ export type VideoInfo =
   | { platform: "youtube"; id: string }
   | { platform: "vimeo"; id: string }
   | { platform: "wistia"; id: string }
+  | { platform: "gdrive-file"; id: string }
+  | { platform: "gdrive-folder"; id: string }
   | { platform: "unknown" };
 
 export function detectVideo(url: string): VideoInfo {
@@ -25,6 +27,14 @@ export function detectVideo(url: string): VideoInfo {
   );
   if (wistiaMatch) return { platform: "wistia", id: wistiaMatch[1] };
 
+  // Google Drive folder
+  const gdriveFolderMatch = url.match(/drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]+)/);
+  if (gdriveFolderMatch) return { platform: "gdrive-folder", id: gdriveFolderMatch[1] };
+
+  // Google Drive file
+  const gdriveFileMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+  if (gdriveFileMatch) return { platform: "gdrive-file", id: gdriveFileMatch[1] };
+
   return { platform: "unknown" };
 }
 
@@ -36,6 +46,10 @@ export function getEmbedUrl(video: VideoInfo): string | null {
       return `https://player.vimeo.com/video/${video.id}?autoplay=1&title=0&byline=0&portrait=0`;
     case "wistia":
       return `https://fast.wistia.net/embed/iframe/${video.id}?autoPlay=true&seo=true&videoFoam=false`;
+    case "gdrive-file":
+      return `https://drive.google.com/file/d/${video.id}/preview`;
+    case "gdrive-folder":
+      return `https://drive.google.com/embeddedfolderview?id=${video.id}#list`;
     default:
       return null;
   }

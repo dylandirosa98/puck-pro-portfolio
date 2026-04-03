@@ -552,9 +552,9 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               className={inputClass}
               value={highlightReelUrl}
               onChange={(e) => setHighlightReelUrl(e.target.value)}
-              placeholder="https://youtube.com/watch?v=..."
+              placeholder="https://drive.google.com/drive/folders/... or YouTube/Vimeo link"
             />
-            <p className="text-[10px] text-white/20 mt-1">Shows as hero button. Auto-added to Highlights on first load — edit or remove it there independently.</p>
+            <p className="text-[10px] text-white/20 mt-1">Supports Google Drive folders, individual Drive files, YouTube, and Vimeo. Shows as hero button.</p>
           </div>
           <div>
             <label className={labelClass}>Resume PDF</label>
