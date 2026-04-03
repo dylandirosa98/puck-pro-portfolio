@@ -1,0 +1,25 @@
+import { WizardState } from "@/lib/types";
+
+export const BUILDER_DEFAULTS: WizardState = {
+  firstName: "Your",
+  lastName: "Name",
+  position: "Forward",
+  number: 14,
+  team: "Your Team",
+  league: "Your League",
+  hometown: "Your City, ST",
+  height: "6'1\"",
+  weight: "185 lbs",
+  shoots: "Left",
+  birthYear: 2006,
+  bio: "Tap \"Edit About\" to write your story. Tell coaches where you're from, what drives you, and where you want to play.",
+  headshotUrl: "/images/silhouette-headshot.svg",
+  heroImageUrl: "/images/hockey-silhouette.png",
+  themeColor: "#b91c1c",
+  currentStats: { gamesPlayed: 28, goals: 12, assists: 18, points: 30, plusMinus: 8, pim: 14 },
+  seasonHistory: [],
+  highlightReelUrl: "",
+  highlights: [],
+  socialLinks: [],
+  resumeUrl: "",
+};

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 420" fill="white">
+
+  <!-- HELMET -->
+  <path d="M104 14 Q100 3 122 2 Q145 2 150 15 Q156 32 150 52 Q146 65 136 70 L120 71 L106 68 Q95 62 90 49 Q85 31 104 14Z"/>
+  <!-- Visor bar -->
+  <rect x="98" y="57" width="54" height="6" rx="3" opacity="0.6"/>
+  <!-- Back ear guard -->
+  <ellipse cx="93" cy="52" rx="8" ry="11"/>
+  <!-- Front ear guard -->
+  <ellipse cx="153" cy="50" rx="8" ry="11"/>
+
+  <!-- NECK -->
+  <rect x="110" y="70" width="22" height="17" rx="4"/>
+
+  <!-- BACK (LEFT) SHOULDER PAD -->
+  <path d="M82 92 Q63 85 53 106 Q48 126 67 130 L96 128 L100 102Z"/>
+
+  <!-- FRONT (RIGHT) SHOULDER PAD -->
+  <path d="M160 91 Q180 84 188 105 Q192 126 173 130 L144 127 L140 101Z"/>
+
+  <!-- JERSEY / TORSO -->
+  <path d="M100 100 L93 188 Q92 200 122 203 Q150 200 150 188 L144 100 Q133 93 121 92 Q108 93 100 100Z"/>
+
+  <!-- BACK ARM (holds stick) -->
+  <path d="M83 107 L64 175 Q60 187 72 191 L87 188 L97 115Z"/>
+  <!-- Back glove -->
+  <path d="M57 185 Q49 198 53 211 Q59 220 74 216 L89 208 L87 185Z"/>
+
+  <!-- FRONT ARM -->
+  <path d="M158 107 L174 170 Q178 182 168 186 L154 183 L147 114Z"/>
+  <!-- Front glove -->
+  <path d="M168 181 Q176 193 174 206 Q168 215 156 212 L146 204 L148 181Z"/>
+
+  <!-- STICK SHAFT (from back glove, diagonal) -->
+  <path d="M58 207 L10 368 Q8 377 16 380 Q25 382 29 373 L77 211Z"/>
+
+  <!-- STICK BLADE -->
+  <path d="M8 363 Q0 374 4 384 Q10 391 40 386 Q57 381 60 370 L44 362Z"/>
+
+  <!-- PANTS / BREEZERS -->
+  <path d="M93 196 L86 276 Q84 290 101 293 L142 293 Q157 290 155 275 L148 196 Q136 205 121 206 Q105 205 93 196Z"/>
+
+  <!-- BACK LEG (extended back + down) -->
+  <path d="M101 289 L87 378 Q84 391 98 393 L113 391 L120 289Z"/>
+  <!-- Back skate boot -->
+  <path d="M85 376 Q78 388 82 399 Q88 407 108 402 L117 392 L100 379Z"/>
+  <!-- Back blade -->
+  <rect x="74" y="398" width="42" height="5" rx="2.5"/>
+
+  <!-- FRONT LEG (striding forward) -->
+  <path d="M128 289 L138 364 Q140 376 152 375 L162 370 L150 288Z"/>
+  <!-- Front lower leg (kick forward) -->
+  <path d="M145 371 Q153 387 162 396 Q168 403 167 415 L146 418 L130 372Z"/>
+  <!-- Front skate boot -->
+  <path d="M148 410 Q148 422 158 428 Q168 430 180 424 L177 409 L152 404Z"/>
+  <!-- Front blade -->
+  <rect x="142" y="424" width="42" height="5" rx="2.5"/>
+
+</svg>

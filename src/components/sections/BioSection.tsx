@@ -14,7 +14,7 @@ export default function BioSection({ player }: BioSectionProps) {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
+        viewport={{ once: false }}
         transition={{ duration: 0.6 }}
       >
         {/* Section label */}
@@ -34,7 +34,7 @@ export default function BioSection({ player }: BioSectionProps) {
             className="relative w-28 h-28 lg:w-40 lg:h-40 rounded-2xl overflow-hidden flex-shrink-0 bg-white/5"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Image

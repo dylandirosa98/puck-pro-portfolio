@@ -26,6 +26,7 @@ export interface PlayerRow {
   theme_color: string;
   highlight_reel_url: string | null;
   resume_url: string | null;
+  user_id: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -56,6 +57,7 @@ export function rowToPlayer(row: PlayerRow): PlayerWithMeta {
     themeColor: row.theme_color,
     highlightReelUrl: row.highlight_reel_url ?? undefined,
     resumeUrl: row.resume_url ?? undefined,
+    userId: row.user_id,
     isPublished: row.is_published,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

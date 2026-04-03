@@ -40,10 +40,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from login page
+  // Redirect authenticated users away from admin login page
   if (request.nextUrl.pathname === "/admin/login" && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
+    return NextResponse.redirect(url);
+  }
+
+  // Protect builder preview + upgrade — unauthenticated users go to /builder/save
+  const protectedBuilder =
+    request.nextUrl.pathname.startsWith("/builder/preview") ||
+    request.nextUrl.pathname.startsWith("/builder/upgrade");
+
+  if (protectedBuilder && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/builder/save";
     return NextResponse.redirect(url);
   }
 
@@ -51,5 +62,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/builder/preview/:path*", "/builder/preview", "/builder/upgrade/:path*", "/builder/upgrade"],
 };

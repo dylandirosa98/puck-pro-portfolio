@@ -51,7 +51,37 @@ export interface Player {
 
 export interface PlayerWithMeta extends Player {
   id: string;
+  userId: string | null;
   isPublished: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface WizardState {
+  // Step 1
+  firstName: string;
+  lastName: string;
+  position: string;
+  number: number;
+  team: string;
+  league: string;
+  hometown: string;
+  height: string;
+  weight: string;
+  shoots: "Left" | "Right";
+  birthYear: number;
+  // Step 2
+  bio: string;
+  headshotUrl: string;
+  heroImageUrl: string;
+  themeColor: string;
+  // Step 3
+  currentStats: PlayerStats;
+  seasonHistory: SeasonStats[];
+  // Step 4
+  highlightReelUrl: string;
+  highlights: Highlight[];
+  // Step 5
+  socialLinks: SocialLink[];
+  resumeUrl: string;
 }
