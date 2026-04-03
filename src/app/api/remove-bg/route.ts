@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Convert to PNG first — background-removal-node only supports JPEG/PNG/WebP
     const pngBuffer = await sharp(Buffer.from(arrayBuffer)).png().toBuffer();
-    const blob = new Blob([pngBuffer], { type: "image/png" });
+    const blob = new Blob([new Uint8Array(pngBuffer)], { type: "image/png" });
 
     // Remove background
     const resultBlob = await removeBackground(blob);
