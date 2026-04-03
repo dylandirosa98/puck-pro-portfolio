@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Player } from "@/lib/types";
 import VideoModal from "@/components/VideoModal";
 import PdfModal from "@/components/PdfModal";
+import { detectVideo } from "@/lib/video";
 
 function blendColor(hex: string, opacity: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -25,6 +26,8 @@ interface HeroSectionProps {
 export default function HeroSection({ player }: HeroSectionProps) {
   const [showReel, setShowReel] = useState(false);
   const [showResume, setShowResume] = useState(false);
+  const reelVideo = player.highlightReelUrl ? detectVideo(player.highlightReelUrl) : null;
+  const isGdrive = reelVideo?.platform === "gdrive-folder" || reelVideo?.platform === "gdrive-file";
   const topColor = blendColor(player.themeColor, 0.251);
   const midColor = blendColor(player.themeColor, 0.125);
 
@@ -110,15 +113,29 @@ export default function HeroSection({ player }: HeroSectionProps) {
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             {player.highlightReelUrl && (
-              <button
-                onClick={() => setShowReel(true)}
-                className="flex items-center gap-1.5 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium text-white bg-white/10 hover:bg-white/15 transition-colors"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Highlights
-              </button>
+              isGdrive ? (
+                <a
+                  href={player.highlightReelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium text-white bg-white/10 hover:bg-white/15 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                    <path d="M15 10l-4 4m0 0l-4-4m4 4V3M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" />
+                  </svg>
+                  {reelVideo?.platform === "gdrive-folder" ? "View Highlights" : "Watch Highlight"}
+                </a>
+              ) : (
+                <button
+                  onClick={() => setShowReel(true)}
+                  className="flex items-center gap-1.5 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium text-white bg-white/10 hover:bg-white/15 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  Highlights
+                </button>
+              )
             )}
             {player.resumeUrl && (
               <button
@@ -136,7 +153,7 @@ export default function HeroSection({ player }: HeroSectionProps) {
       </section>
 
       {/* Video Modal */}
-      {player.highlightReelUrl && (
+      {player.highlightReelUrl && !isGdrive && (
         <VideoModal
           url={player.highlightReelUrl}
           isOpen={showReel}
