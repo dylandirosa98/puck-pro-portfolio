@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient as createClient } from "@/lib/supabase/admin";
 
 function slugify(firstName: string, lastName: string): string {
   return `${firstName}-${lastName}`
@@ -11,7 +11,7 @@ function slugify(firstName: string, lastName: string): string {
 }
 
 export async function createPlayer(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
@@ -60,7 +60,7 @@ export async function createPlayer(formData: FormData) {
 }
 
 export async function updatePlayer(id: string, formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
@@ -109,7 +109,7 @@ export async function updatePlayer(id: string, formData: FormData) {
 }
 
 export async function deletePlayer(id: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Get the player's slug first for storage cleanup
   const { data: player } = await supabase
@@ -145,7 +145,7 @@ export async function deletePlayer(id: string) {
 }
 
 export async function togglePublish(id: string, isPublished: boolean) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { error } = await supabase
     .from("players")
