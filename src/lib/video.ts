@@ -28,7 +28,7 @@ export function detectVideo(url: string): VideoInfo {
   if (wistiaMatch) return { platform: "wistia", id: wistiaMatch[1] };
 
   // Google Drive folder
-  const gdriveFolderMatch = url.match(/drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]+)/);
+  const gdriveFolderMatch = url.match(/drive\.google\.com\/drive(?:\/u\/\d+)?\/folders\/([a-zA-Z0-9_-]+)/);
   if (gdriveFolderMatch) return { platform: "gdrive-folder", id: gdriveFolderMatch[1] };
 
   // Google Drive file
