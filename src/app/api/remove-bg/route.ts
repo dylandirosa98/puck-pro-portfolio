@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { removeBackground } from "@imgly/background-removal-node";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-
-  // Auth check
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const supabase = createAdminClient();
 
   const formData = await request.formData();
   const file = formData.get("file") as File;
