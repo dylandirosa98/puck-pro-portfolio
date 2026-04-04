@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 
@@ -17,6 +17,14 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
   const [preview, setPreview] = useState(currentUrl);
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
+
+  // Preload the model as soon as the hero uploader mounts so it's ready when the user picks a file
+  useEffect(() => {
+    if (folder !== "hero") return;
+    import("@imgly/background-removal").then(({ preload }) =>
+      preload({ model: "isnet_quint8", proxyToWorker: true }).catch(() => {})
+    );
+  }, [folder]);
 
   async function uploadDirect(file: File) {
     const ext = file.name.split(".").pop();
@@ -40,7 +48,18 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
   async function uploadWithBgRemoval(file: File) {
     // Run background removal in the browser via WebAssembly — no server needed
     const { removeBackground } = await import("@imgly/background-removal");
-    const resultBlob = await removeBackground(file);
+    const resultBlob = await removeBackground(file, {
+      model: "isnet_quint8",
+      proxyToWorker: true,
+      progress: (key, current, total) => {
+        if (key.includes("fetch") && total > 0) {
+          const pct = Math.round((current / total) * 100);
+          setStatus(`Downloading model... ${pct}%`);
+        } else if (key.includes("compute")) {
+          setStatus("Removing background...");
+        }
+      },
+    });
 
     const path = `${slug || "temp"}/hero.png`;
 
