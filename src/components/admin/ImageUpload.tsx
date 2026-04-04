@@ -29,7 +29,9 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
   }, [folder]);
 
   async function uploadDirect(file: File, heroPath?: boolean) {
-    const ext = file.name.split(".").pop();
+    const needsConversion = ["image/avif", "image/heic", "image/heif"].includes(file.type);
+    const uploadBlob = needsConversion ? await toPng(file) : file;
+    const ext = needsConversion ? "png" : file.name.split(".").pop();
     const path = heroPath
       ? `${slug || "temp"}/hero.${ext}`
       : `${slug || "temp"}/${folder}.${ext}`;
@@ -38,7 +40,7 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
 
     const { error } = await supabase.storage
       .from("player-images")
-      .upload(path, file, { upsert: true });
+      .upload(path, uploadBlob, { upsert: true });
 
     if (error) throw new Error(error.message);
 
