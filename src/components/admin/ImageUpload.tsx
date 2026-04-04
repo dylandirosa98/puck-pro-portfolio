@@ -14,21 +14,25 @@ interface ImageUploadProps {
 export default function ImageUpload({ slug, folder, currentUrl, onUpload }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState("");
+  const [progress, setProgress] = useState(0);
   const [preview, setPreview] = useState(currentUrl);
   const fileRef = useRef<HTMLInputElement>(null);
+  const bgRemovalRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
-  // Preload the model as soon as the hero uploader mounts so it's ready when the user picks a file
+  // Preload the default model when hero uploader mounts
   useEffect(() => {
     if (folder !== "hero") return;
     import("@imgly/background-removal").then(({ preload }) =>
-      preload({ model: "isnet_quint8", proxyToWorker: true }).catch(() => {})
+      preload({ proxyToWorker: true }).catch(() => {})
     );
   }, [folder]);
 
-  async function uploadDirect(file: File) {
+  async function uploadDirect(file: File, heroPath?: boolean) {
     const ext = file.name.split(".").pop();
-    const path = `${slug || "temp"}/${folder}.${ext}`;
+    const path = heroPath
+      ? `${slug || "temp"}/hero.${ext}`
+      : `${slug || "temp"}/${folder}.${ext}`;
 
     await supabase.storage.from("player-images").remove([path]);
 
@@ -42,27 +46,25 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
       .from("player-images")
       .getPublicUrl(path);
 
-    return urlData.publicUrl;
+    return `${urlData.publicUrl}?t=${Date.now()}`;
   }
 
   async function uploadWithBgRemoval(file: File) {
-    // Run background removal in the browser via WebAssembly — no server needed
     const { removeBackground } = await import("@imgly/background-removal");
     const resultBlob = await removeBackground(file, {
-      model: "isnet_quint8",
       proxyToWorker: true,
       progress: (key, current, total) => {
         if (key.includes("fetch") && total > 0) {
-          const pct = Math.round((current / total) * 100);
-          setStatus(`Downloading model... ${pct}%`);
+          setProgress(Math.round((current / total) * 100));
+          setStatus("Downloading model");
         } else if (key.includes("compute")) {
-          setStatus("Removing background...");
+          setProgress(0);
+          setStatus("Removing background");
         }
       },
     });
 
     const path = `${slug || "temp"}/hero.png`;
-
     await supabase.storage.from("player-images").remove([path]);
 
     const { error } = await supabase.storage
@@ -78,33 +80,100 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
     return `${urlData.publicUrl}?t=${Date.now()}`;
   }
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  async function handleFile(file: File, removeBg: boolean) {
     setPreview(URL.createObjectURL(file));
     setUploading(true);
+    setProgress(0);
 
     try {
-      if (folder === "hero") {
-        setStatus("Removing background...");
-        const url = await uploadWithBgRemoval(file);
-        onUpload(url);
-        setPreview(url);
+      let url: string;
+      if (removeBg) {
+        setStatus("Downloading model");
+        url = await uploadWithBgRemoval(file);
       } else {
-        setStatus("Uploading...");
-        const url = await uploadDirect(file);
-        onUpload(url);
+        setStatus("Uploading");
+        url = await uploadDirect(file, folder === "hero");
       }
+      onUpload(url);
+      setPreview(url);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Upload failed";
       alert(msg);
     } finally {
       setUploading(false);
       setStatus("");
+      setProgress(0);
     }
   }
 
+  if (folder === "hero") {
+    return (
+      <div className="space-y-2">
+        {/* Preview */}
+        <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-white/5 border border-white/10">
+          {preview && !preview.includes("placeholder") ? (
+            <Image src={preview} alt="hero" fill className="object-cover" unoptimized />
+          ) : (
+            <div className="flex items-center justify-center h-full text-white/30 text-xs text-center px-2">
+              No image
+            </div>
+          )}
+          {uploading && (
+            <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-1.5 px-2">
+              <div className="w-full bg-white/10 rounded-full h-1">
+                {progress > 0 && (
+                  <div
+                    className="bg-white h-1 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                )}
+              </div>
+              <span className="text-[10px] text-white/80 text-center">
+                {status}{progress > 0 ? ` ${progress}%` : "..."}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Two upload buttons */}
+        {!uploading && (
+          <div className="flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={() => bgRemovalRef.current?.click()}
+              className="text-[11px] px-2.5 py-1.5 rounded bg-white/10 hover:bg-white/15 text-white transition-colors text-left"
+            >
+              ✦ Upload + Remove BG
+            </button>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="text-[11px] px-2.5 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors text-left"
+            >
+              ↑ Upload pre-cut image
+            </button>
+          </div>
+        )}
+
+        <input
+          ref={bgRemovalRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, true); }}
+          className="hidden"
+        />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/png,image/webp"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, false); }}
+          className="hidden"
+        />
+      </div>
+    );
+  }
+
+  // Headshot — simple direct upload
   return (
     <div>
       <div
@@ -114,7 +183,7 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
         }`}
       >
         {preview && !preview.includes("placeholder") ? (
-          <Image src={preview} alt={folder} fill className="object-cover" unoptimized />
+          <Image src={preview} alt="headshot" fill className="object-cover" unoptimized />
         ) : (
           <div className="flex items-center justify-center h-full text-white/30 text-xs">
             Click to upload
@@ -122,7 +191,7 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
         )}
         {uploading && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-xs text-white text-center px-2">{status}</span>
+            <span className="text-xs text-white">{status}...</span>
           </div>
         )}
         {!uploading && (
@@ -133,16 +202,11 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
           </div>
         )}
       </div>
-      {folder === "hero" && (
-        <p className="text-[10px] text-white/20 mt-1.5">
-          Background auto-removed
-        </p>
-      )}
       <input
         ref={fileRef}
         type="file"
         accept="image/*"
-        onChange={handleUpload}
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, false); }}
         className="hidden"
       />
     </div>
