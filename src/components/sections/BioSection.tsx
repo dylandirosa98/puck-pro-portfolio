@@ -59,11 +59,11 @@ export default function BioSection({ player }: BioSectionProps) {
                 { label: "Height", value: player.height },
                 { label: "Weight", value: player.weight },
               ].map((item) => (
-                <div key={item.label} className="flex justify-between border-b border-white/5 py-2">
-                  <span className="text-[11px] text-white/30 uppercase tracking-wider">
+                <div key={item.label} className="flex justify-between items-baseline gap-3 border-b border-white/5 py-2 min-w-0">
+                  <span className="text-[11px] text-white/30 uppercase tracking-wider flex-shrink-0">
                     {item.label}
                   </span>
-                  <span className="text-sm font-medium">{item.value}</span>
+                  <span className="text-sm font-medium text-right truncate" title={item.value}>{item.value}</span>
                 </div>
               ))}
             </div>

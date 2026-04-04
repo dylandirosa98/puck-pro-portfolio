@@ -39,12 +39,12 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
               transition={{ duration: 0.4, delay: i * 0.1 }}
             >
               {/* Season header */}
-              <div className="flex items-center justify-between mb-3">
-                <div>
+              <div className="flex items-start justify-between mb-3 gap-2">
+                <div className="min-w-0">
                   <span className="text-sm font-bold">{season.season}</span>
-                  <span className="text-xs text-white/40 ml-2">
+                  <div className="text-xs text-white/40 truncate">
                     {season.team} &middot; {season.league}
-                  </span>
+                  </div>
                 </div>
                 <span
                   className="text-xs font-bold px-2 py-0.5 rounded"
