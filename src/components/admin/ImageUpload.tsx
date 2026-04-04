@@ -49,9 +49,27 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
     return `${urlData.publicUrl}?t=${Date.now()}`;
   }
 
+  async function toPng(file: File): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d")!.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Canvas conversion failed")), "image/png");
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Failed to load image")); };
+      img.src = url;
+    });
+  }
+
   async function uploadWithBgRemoval(file: File) {
     const { removeBackground } = await import("@imgly/background-removal");
-    const resultBlob = await removeBackground(file, {
+    const pngBlob = await toPng(file);
+    const resultBlob = await removeBackground(pngBlob, {
       proxyToWorker: true,
       progress: (key, current, total) => {
         if (key.includes("fetch") && total > 0) {
