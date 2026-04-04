@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { removeBackground } from "@imgly/background-removal-node";
 import { createAdminClient } from "@/lib/supabase/admin";
-import sharp from "sharp";
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
@@ -17,15 +15,16 @@ export async function POST(request: NextRequest) {
   try {
     const arrayBuffer = await file.arrayBuffer();
 
-    // Convert to PNG first — background-removal-node only supports JPEG/PNG/WebP
+    // Convert any format (AVIF, HEIC, JPEG, etc.) to PNG via sharp
+    const sharp = (await import("sharp")).default;
     const pngBuffer = await sharp(Buffer.from(arrayBuffer)).png().toBuffer();
     const blob = new Blob([new Uint8Array(pngBuffer)], { type: "image/png" });
 
-    // Remove background
+    // Dynamically import to avoid crashing the route if the package fails to load
+    const { removeBackground } = await import("@imgly/background-removal-node");
     const resultBlob = await removeBackground(blob);
     const resultBuffer = Buffer.from(await resultBlob.arrayBuffer());
 
-    // Upload processed image to Supabase Storage
     const path = `${slug || "temp"}/hero.png`;
 
     await supabase.storage.from("player-images").remove([path]);
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Background removal failed:", err);
     return NextResponse.json(
-      { error: "Background removal failed. Try uploading a pre-cut image instead." },
+      { error: `Background removal failed: ${err instanceof Error ? err.message : String(err)}` },
       { status: 500 }
     );
   }

@@ -47,7 +47,14 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
       body: formData,
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    let data: { url?: string; error?: string };
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error("Non-JSON response from remove-bg:", text.slice(0, 500));
+      throw new Error("Background removal unavailable in production. Upload a pre-cut PNG instead.");
+    }
     if (!res.ok) throw new Error(data.error);
 
     return data.url as string;
