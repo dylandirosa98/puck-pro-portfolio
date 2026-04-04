@@ -78,14 +78,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     player?.seasonHistory ?? []
   );
 
-  // Highlights — auto-include highlight reel URL if not already in the array
-  const [highlights, setHighlights] = useState<Highlight[]>(() => {
-    const existing = player?.highlights ?? [];
-    if (player?.highlightReelUrl && !existing.some((h) => h.url === player.highlightReelUrl)) {
-      return [{ title: "Highlight Reel", url: player.highlightReelUrl }, ...existing];
-    }
-    return existing;
-  });
+  const [highlights, setHighlights] = useState<Highlight[]>(player?.highlights ?? []);
 
   // Social Links
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(
