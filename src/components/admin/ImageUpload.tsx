@@ -165,7 +165,7 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
         <input
           ref={fileRef}
           type="file"
-          accept="image/png,image/webp"
+          accept="image/*"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, false); }}
           className="hidden"
         />
