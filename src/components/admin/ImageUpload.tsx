@@ -38,26 +38,25 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
   }
 
   async function uploadWithBgRemoval(file: File) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("slug", slug || "temp");
+    // Run background removal in the browser via WebAssembly — no server needed
+    const { removeBackground } = await import("@imgly/background-removal");
+    const resultBlob = await removeBackground(file);
 
-    const res = await fetch("/api/remove-bg", {
-      method: "POST",
-      body: formData,
-    });
+    const path = `${slug || "temp"}/hero.png`;
 
-    const text = await res.text();
-    let data: { url?: string; error?: string };
-    try {
-      data = JSON.parse(text);
-    } catch {
-      console.error("Non-JSON response from remove-bg:", text.slice(0, 500));
-      throw new Error("Background removal unavailable in production. Upload a pre-cut PNG instead.");
-    }
-    if (!res.ok) throw new Error(data.error);
+    await supabase.storage.from("player-images").remove([path]);
 
-    return data.url as string;
+    const { error } = await supabase.storage
+      .from("player-images")
+      .upload(path, resultBlob, { contentType: "image/png", upsert: true });
+
+    if (error) throw new Error(error.message);
+
+    const { data: urlData } = supabase.storage
+      .from("player-images")
+      .getPublicUrl(path);
+
+    return `${urlData.publicUrl}?t=${Date.now()}`;
   }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
