@@ -64,6 +64,9 @@ export default function HeroSection({ player }: HeroSectionProps) {
         {/* Bottom gradient fade over the player image */}
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent" />
 
+        {/* Left-side text shadow — sits behind text, improves readability over the player image */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/70 via-[#0a0a0a]/30 to-transparent pointer-events-none" />
+
         {/* Content */}
         <div className="relative w-full px-5 pb-10 pt-20 z-10 lg:max-w-5xl lg:mx-auto lg:px-10 lg:pb-16">
           <motion.div
@@ -82,9 +85,17 @@ export default function HeroSection({ player }: HeroSectionProps) {
               {player.number}
             </motion.span>
 
+            {/* Team + League */}
+            <div className="mb-3">
+              {player.league && (
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-0.5">{player.league}</div>
+              )}
+              <div className="text-sm lg:text-base font-semibold text-white/75 tracking-wide">{player.team}</div>
+            </div>
+
             {/* Name */}
             <h1 className="text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.9] tracking-tight">
-              <span className="block text-white/60 text-2xl sm:text-3xl lg:text-4xl font-medium mb-1">
+              <span className="block text-white/40 text-2xl sm:text-3xl lg:text-4xl font-medium mb-1">
                 {player.firstName}
               </span>
               {player.lastName}

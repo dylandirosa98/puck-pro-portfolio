@@ -52,8 +52,6 @@ export default function BioSection({ player }: BioSectionProps) {
             {/* Quick details */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 lg:gap-x-10 gap-y-2 mt-5">
               {[
-                { label: "Team", value: player.team },
-                { label: "League", value: player.league },
                 { label: "Position", value: player.position },
                 { label: "Shoots", value: player.shoots },
                 { label: "Height", value: player.height },
