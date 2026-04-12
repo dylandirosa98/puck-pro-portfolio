@@ -5,9 +5,14 @@ import { Player } from "@/lib/types";
 import HeroSection from "./sections/HeroSection";
 import StatsBar from "./sections/StatsBar";
 import BioSection from "./sections/BioSection";
+import SkillsetsSection from "./sections/SkillsetsSection";
+import InterestsSection from "./sections/InterestsSection";
+import TrainingSection from "./sections/TrainingSection";
 import CareerStats from "./sections/CareerStats";
 import HighlightsSection from "./sections/HighlightsSection";
 import SocialFooter from "./sections/SocialFooter";
+
+const DEFAULT_ORDER = ["about", "skillsets", "interests", "training", "career-stats", "highlights"];
 
 function hexToRgb(hex: string) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -37,6 +42,34 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
     };
   }, [player.themeColor]);
 
+  const rawOrder = player.sectionOrder && player.sectionOrder.length > 0
+    ? player.sectionOrder
+    : DEFAULT_ORDER;
+  const order = rawOrder.filter((k) => k !== "stats").concat(
+    rawOrder.includes("about") ? [] : ["about"]
+  ).filter((k, i, arr) => arr.indexOf(k) === i); // dedupe
+
+  function renderSection(key: string) {
+    switch (key) {
+      case "about":
+        return <BioSection key="about" player={player} />;
+      case "skillsets":
+        return <SkillsetsSection key="skillsets" player={player} />;
+      case "interests":
+        return <InterestsSection key="interests" player={player} />;
+      case "training":
+        return <TrainingSection key="training" player={player} />;
+      case "career-stats":
+        return player.seasonHistory.length > 0
+          ? <CareerStats key="career-stats" seasons={player.seasonHistory} />
+          : null;
+      case "highlights":
+        return <HighlightsSection key="highlights" highlights={player.highlights} />;
+      default:
+        return null;
+    }
+  }
+
   return (
     <main
       className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden"
@@ -44,9 +77,7 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
     >
       <HeroSection player={player} />
       <StatsBar stats={player.currentStats} />
-      <BioSection player={player} />
-      <CareerStats seasons={player.seasonHistory} />
-      <HighlightsSection highlights={player.highlights} />
+      {order.map(renderSection)}
       <SocialFooter socialLinks={player.socialLinks} />
     </main>
   );

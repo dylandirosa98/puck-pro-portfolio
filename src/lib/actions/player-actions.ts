@@ -41,6 +41,12 @@ export async function createPlayer(formData: FormData) {
     theme_color: (formData.get("themeColor") as string) || "#b91c1c",
     highlight_reel_url: (formData.get("highlightReelUrl") as string) || null,
     resume_url: (formData.get("resumeUrl") as string) || null,
+    skillsets: JSON.parse((formData.get("skillsets") as string) || "[]"),
+    section_order: JSON.parse((formData.get("sectionOrder") as string) || "[]"),
+    interests: (formData.get("interests") as string) || null,
+    training_video_url: (formData.get("trainingVideoUrl") as string) || null,
+    training_description: (formData.get("trainingDescription") as string) || null,
+    transcript_url: (formData.get("transcriptUrl") as string) || null,
     is_published: formData.get("isPublished") === "true",
   };
 
@@ -90,6 +96,12 @@ export async function updatePlayer(id: string, formData: FormData) {
     theme_color: (formData.get("themeColor") as string) || "#b91c1c",
     highlight_reel_url: (formData.get("highlightReelUrl") as string) || null,
     resume_url: (formData.get("resumeUrl") as string) || null,
+    skillsets: JSON.parse((formData.get("skillsets") as string) || "[]"),
+    section_order: JSON.parse((formData.get("sectionOrder") as string) || "[]"),
+    interests: (formData.get("interests") as string) || null,
+    training_video_url: (formData.get("trainingVideoUrl") as string) || null,
+    training_description: (formData.get("trainingDescription") as string) || null,
+    transcript_url: (formData.get("transcriptUrl") as string) || null,
     is_published: formData.get("isPublished") === "true",
   };
 

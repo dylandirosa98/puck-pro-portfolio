@@ -89,6 +89,21 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [themeColor, setThemeColor] = useState(player?.themeColor ?? "#b91c1c");
   const [highlightReelUrl, setHighlightReelUrl] = useState(player?.highlightReelUrl ?? "");
   const [resumeUrl, setResumeUrl] = useState(player?.resumeUrl ?? "");
+  const [skillsets, setSkillsets] = useState<{ name: string; description: string }[]>(player?.skillsets ?? []);
+  const [sectionOrder, setSectionOrder] = useState<string[]>(() => {
+    const raw = player?.sectionOrder && player.sectionOrder.length > 0
+      ? player.sectionOrder
+      : ["about", "skillsets", "interests", "training", "career-stats", "highlights"];
+    // Remove legacy "stats" key, ensure "about" is present
+    const cleaned = raw.filter((k) => k !== "stats");
+    if (!cleaned.includes("about")) cleaned.unshift("about");
+    return cleaned;
+  });
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [interests, setInterests] = useState(player?.interests ?? "");
+  const [trainingVideoUrl, setTrainingVideoUrl] = useState(player?.trainingVideoUrl ?? "");
+  const [trainingDescription, setTrainingDescription] = useState(player?.trainingDescription ?? "");
+  const [transcriptUrl, setTranscriptUrl] = useState(player?.transcriptUrl ?? "");
   const [isPublished, setIsPublished] = useState(player?.isPublished ?? false);
 
   const [saving, setSaving] = useState(false);
@@ -129,6 +144,12 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     formData.set("themeColor", themeColor);
     formData.set("highlightReelUrl", highlightReelUrl);
     formData.set("resumeUrl", resumeUrl);
+    formData.set("skillsets", JSON.stringify(skillsets));
+    formData.set("sectionOrder", JSON.stringify(sectionOrder));
+    formData.set("interests", interests);
+    formData.set("trainingVideoUrl", trainingVideoUrl);
+    formData.set("trainingDescription", trainingDescription);
+    formData.set("transcriptUrl", transcriptUrl);
     formData.set("isPublished", String(isPublished));
 
     const result = isEdit
@@ -514,6 +535,172 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         >
           + Add Social Link
         </button>
+      </fieldset>
+
+      {/* Skillsets */}
+      <fieldset className={sectionClass}>
+        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+          Player Profile / Skillsets
+        </legend>
+        {skillsets.map((skill, i) => (
+          <div key={i} className="flex gap-3 items-start">
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Skill Name</label>
+                <input
+                  className={inputClass}
+                  value={skill.name}
+                  onChange={(e) => {
+                    const updated = [...skillsets];
+                    updated[i] = { ...updated[i], name: e.target.value };
+                    setSkillsets(updated);
+                  }}
+                  placeholder="e.g. Offensive Defenseman"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Description</label>
+                <input
+                  className={inputClass}
+                  value={skill.description}
+                  onChange={(e) => {
+                    const updated = [...skillsets];
+                    updated[i] = { ...updated[i], description: e.target.value };
+                    setSkillsets(updated);
+                  }}
+                  placeholder="Brief description of this skill..."
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSkillsets(skillsets.filter((_, j) => j !== i))}
+              className="mt-6 text-white/20 hover:text-red-400 text-lg leading-none transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setSkillsets([...skillsets, { name: "", description: "" }])}
+          className="text-xs text-white/40 hover:text-white/70 px-3 py-2 border border-dashed border-white/10 rounded-lg hover:border-white/30 transition-colors w-full"
+        >
+          + Add Skillset
+        </button>
+        <p className="text-[10px] text-white/20">Shows as a card grid on the profile. Leave empty to hide the section.</p>
+      </fieldset>
+
+      {/* Interests */}
+      <fieldset className={sectionClass}>
+        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+          Outside the Rink
+        </legend>
+        <textarea
+          className={inputClass}
+          rows={4}
+          value={interests}
+          onChange={(e) => setInterests(e.target.value)}
+          placeholder="Describe the player's interests and life outside hockey..."
+        />
+        <p className="text-[10px] text-white/20 mt-1">Shows as a separate section on the profile. Leave blank to hide.</p>
+      </fieldset>
+
+      {/* Training */}
+      <fieldset className={sectionClass}>
+        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+          Training
+        </legend>
+        <div>
+          <label className={labelClass}>Video URL</label>
+          <input
+            className={inputClass}
+            value={trainingVideoUrl}
+            onChange={(e) => setTrainingVideoUrl(e.target.value)}
+            placeholder="YouTube, Vimeo, or Google Drive link"
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Description</label>
+          <textarea
+            className={inputClass}
+            rows={3}
+            value={trainingDescription}
+            onChange={(e) => setTrainingDescription(e.target.value)}
+            placeholder="e.g. Gianluca regularly trains with Coach X, working on edge work, shot release, and defensive positioning."
+          />
+        </div>
+        <p className="text-[10px] text-white/20">Leave both blank to hide the Training section.</p>
+      </fieldset>
+
+      {/* Academics */}
+      <fieldset className={sectionClass}>
+        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+          Academics
+        </legend>
+        <div>
+          <label className={labelClass}>Transcript URL</label>
+          <input
+            className={inputClass}
+            value={transcriptUrl}
+            onChange={(e) => setTranscriptUrl(e.target.value)}
+            placeholder="Google Drive link or PDF URL"
+          />
+          <p className="text-[10px] text-white/20 mt-1">Shows as an &quot;Academics&quot; button in the hero. Leave blank to hide.</p>
+        </div>
+      </fieldset>
+
+      {/* Section Order */}
+      <fieldset className={sectionClass}>
+        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+          Page Section Order
+        </legend>
+        <p className="text-[10px] text-white/30 mb-3">Drag to reorder. Hero and Stats Bar are always first.</p>
+        <div className="space-y-2">
+          {/* Fixed */}
+          {["Hero", "Stats Bar"].map((label) => (
+            <div key={label} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/[0.02] border border-white/5 opacity-40 cursor-not-allowed select-none">
+              <span className="text-white/30">⠿</span>
+              <span className="text-xs text-white/50">{label}</span>
+              <span className="ml-auto text-[10px] text-white/20">locked</span>
+            </div>
+          ))}
+          {/* Draggable */}
+          {sectionOrder.map((key, i) => {
+            const labels: Record<string, string> = {
+              about: "About",
+              skillsets: "Player Profile / Skillsets",
+              interests: "Outside the Rink",
+              training: "Training",
+              "career-stats": "Career Stats",
+              highlights: "Highlights",
+            };
+            return (
+              <div
+                key={key}
+                draggable
+                onDragStart={() => setDragIndex(i)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (dragIndex === null || dragIndex === i) return;
+                  const newOrder = [...sectionOrder];
+                  newOrder.splice(i, 0, newOrder.splice(dragIndex, 1)[0]);
+                  setSectionOrder(newOrder);
+                  setDragIndex(i);
+                }}
+                onDragEnd={() => setDragIndex(null)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-grab active:cursor-grabbing transition-colors select-none ${
+                  dragIndex === i
+                    ? "bg-white/10 border-white/20"
+                    : "bg-white/[0.03] border-white/5 hover:border-white/15"
+                }`}
+              >
+                <span className="text-white/30 text-base">⠿</span>
+                <span className="text-xs text-white/70">{labels[key] ?? key}</span>
+              </div>
+            );
+          })}
+        </div>
       </fieldset>
 
       {/* Settings */}

@@ -47,6 +47,12 @@ export interface Player {
   themeColor: string;
   highlightReelUrl?: string;
   resumeUrl?: string;
+  skillsets?: { name: string; description: string }[];
+  sectionOrder?: string[];
+  interests?: string;
+  trainingVideoUrl?: string;
+  trainingDescription?: string;
+  transcriptUrl?: string;
 }
 
 export interface PlayerWithMeta extends Player {

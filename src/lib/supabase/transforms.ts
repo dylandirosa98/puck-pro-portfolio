@@ -26,6 +26,12 @@ export interface PlayerRow {
   theme_color: string;
   highlight_reel_url: string | null;
   resume_url: string | null;
+  skillsets: { name: string; description: string }[] | null;
+  section_order: string[] | null;
+  interests: string | null;
+  training_video_url: string | null;
+  training_description: string | null;
+  transcript_url: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -56,6 +62,12 @@ export function rowToPlayer(row: PlayerRow): PlayerWithMeta {
     themeColor: row.theme_color,
     highlightReelUrl: row.highlight_reel_url ?? undefined,
     resumeUrl: row.resume_url ?? undefined,
+    skillsets: row.skillsets ?? [],
+    sectionOrder: row.section_order ?? [],
+    interests: row.interests ?? undefined,
+    trainingVideoUrl: row.training_video_url ?? undefined,
+    trainingDescription: row.training_description ?? undefined,
+    transcriptUrl: row.transcript_url ?? undefined,
     isPublished: row.is_published,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -87,6 +99,12 @@ export function playerToRow(player: Partial<Player>): Record<string, unknown> {
   if (player.themeColor !== undefined) row.theme_color = player.themeColor;
   if (player.highlightReelUrl !== undefined) row.highlight_reel_url = player.highlightReelUrl;
   if (player.resumeUrl !== undefined) row.resume_url = player.resumeUrl;
+  if (player.skillsets !== undefined) row.skillsets = player.skillsets;
+  if (player.sectionOrder !== undefined) row.section_order = player.sectionOrder;
+  if (player.interests !== undefined) row.interests = player.interests;
+  if (player.trainingVideoUrl !== undefined) row.training_video_url = player.trainingVideoUrl;
+  if (player.trainingDescription !== undefined) row.training_description = player.trainingDescription;
+  if (player.transcriptUrl !== undefined) row.transcript_url = player.transcriptUrl;
 
   return row;
 }
