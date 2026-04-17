@@ -31,6 +31,7 @@ export interface PlayerRow {
   interests: string | null;
   training_video_url: string | null;
   training_description: string | null;
+  training_videos: { url: string; description: string }[] | null;
   transcript_url: string | null;
   is_published: boolean;
   created_at: string;
@@ -67,6 +68,11 @@ export function rowToPlayer(row: PlayerRow): PlayerWithMeta {
     interests: row.interests ?? undefined,
     trainingVideoUrl: row.training_video_url ?? undefined,
     trainingDescription: row.training_description ?? undefined,
+    trainingVideos: (() => {
+      if (row.training_videos && row.training_videos.length > 0) return row.training_videos;
+      if (row.training_video_url) return [{ url: row.training_video_url, description: row.training_description ?? "" }];
+      return [];
+    })(),
     transcriptUrl: row.transcript_url ?? undefined,
     isPublished: row.is_published,
     createdAt: row.created_at,
@@ -104,6 +110,7 @@ export function playerToRow(player: Partial<Player>): Record<string, unknown> {
   if (player.interests !== undefined) row.interests = player.interests;
   if (player.trainingVideoUrl !== undefined) row.training_video_url = player.trainingVideoUrl;
   if (player.trainingDescription !== undefined) row.training_description = player.trainingDescription;
+  if (player.trainingVideos !== undefined) row.training_videos = player.trainingVideos;
   if (player.transcriptUrl !== undefined) row.transcript_url = player.transcriptUrl;
 
   return row;

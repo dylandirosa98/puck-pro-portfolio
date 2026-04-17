@@ -101,8 +101,11 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   });
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [interests, setInterests] = useState(player?.interests ?? "");
-  const [trainingVideoUrl, setTrainingVideoUrl] = useState(player?.trainingVideoUrl ?? "");
-  const [trainingDescription, setTrainingDescription] = useState(player?.trainingDescription ?? "");
+  const [trainingVideos, setTrainingVideos] = useState<{ url: string; description: string }[]>(() => {
+    if (player?.trainingVideos && player.trainingVideos.length > 0) return player.trainingVideos;
+    if (player?.trainingVideoUrl) return [{ url: player.trainingVideoUrl, description: player.trainingDescription ?? "" }];
+    return [];
+  });
   const [transcriptUrl, setTranscriptUrl] = useState(player?.transcriptUrl ?? "");
   const [isPublished, setIsPublished] = useState(player?.isPublished ?? false);
 
@@ -147,8 +150,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     formData.set("skillsets", JSON.stringify(skillsets));
     formData.set("sectionOrder", JSON.stringify(sectionOrder));
     formData.set("interests", interests);
-    formData.set("trainingVideoUrl", trainingVideoUrl);
-    formData.set("trainingDescription", trainingDescription);
+    formData.set("trainingVideos", JSON.stringify(trainingVideos));
     formData.set("transcriptUrl", transcriptUrl);
     formData.set("isPublished", String(isPublished));
 
@@ -611,26 +613,47 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
           Training
         </legend>
-        <div>
-          <label className={labelClass}>Video URL</label>
-          <input
-            className={inputClass}
-            value={trainingVideoUrl}
-            onChange={(e) => setTrainingVideoUrl(e.target.value)}
-            placeholder="YouTube, Vimeo, or Google Drive link"
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Description</label>
-          <textarea
-            className={inputClass}
-            rows={3}
-            value={trainingDescription}
-            onChange={(e) => setTrainingDescription(e.target.value)}
-            placeholder="e.g. Gianluca regularly trains with Coach X, working on edge work, shot release, and defensive positioning."
-          />
-        </div>
-        <p className="text-[10px] text-white/20">Leave both blank to hide the Training section.</p>
+        {trainingVideos.map((tv, i) => (
+          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/40">Video {i + 1}</span>
+              <button
+                type="button"
+                onClick={() => setTrainingVideos(trainingVideos.filter((_, j) => j !== i))}
+                className="text-xs text-red-400/60 hover:text-red-400"
+              >
+                Remove
+              </button>
+            </div>
+            <div>
+              <label className={labelClass}>Video URL</label>
+              <input
+                className={inputClass}
+                value={tv.url}
+                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { ...t, url: e.target.value } : t))}
+                placeholder="YouTube, Vimeo, or Google Drive link"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Description</label>
+              <textarea
+                className={inputClass}
+                rows={3}
+                value={tv.description}
+                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { ...t, description: e.target.value } : t))}
+                placeholder="e.g. Works on edge work, shot release, and defensive positioning."
+              />
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setTrainingVideos([...trainingVideos, { url: "", description: "" }])}
+          className="w-full py-2 rounded-lg border border-dashed border-white/20 text-xs text-white/40 hover:text-white/60 hover:border-white/30 transition-colors"
+        >
+          + Add Training Video
+        </button>
+        <p className="text-[10px] text-white/20">Add one or more training videos. Leave empty to hide the Training section.</p>
       </fieldset>
 
       {/* Academics */}

@@ -52,6 +52,7 @@ export interface Player {
   interests?: string;
   trainingVideoUrl?: string;
   trainingDescription?: string;
+  trainingVideos?: { url: string; description: string }[];
   transcriptUrl?: string;
 }
 
