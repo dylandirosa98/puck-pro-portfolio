@@ -1,74 +1,80 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Highlight } from "@/lib/types";
 import { detectVideo } from "@/lib/video";
 
-function VideoCard({ highlight }: { highlight: Highlight }) {
+function VideoSlide({ highlight, active }: { highlight: Highlight; active: boolean }) {
   const [playing, setPlaying] = useState(false);
   const video = detectVideo(highlight.url);
 
-  // YouTube: thumbnail preview → click to play
-  if (video.platform === "youtube") {
-    if (playing) {
+  // Reset playing state when slide becomes inactive
+  if (!active && playing) setPlaying(false);
+
+  const embed = (() => {
+    if (!active) return null;
+    if (video.platform === "youtube") {
+      if (!playing) {
+        return (
+          <button
+            onClick={() => setPlaying(true)}
+            className="absolute inset-0 w-full h-full group cursor-pointer"
+          >
+            <Image
+              src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+              alt={highlight.title}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+              <div className="w-16 h-16 rounded-full bg-white/90 group-hover:bg-white flex items-center justify-center transition-colors shadow-lg">
+                <svg viewBox="0 0 24 24" fill="#0a0a0a" className="w-7 h-7 ml-1">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          </button>
+        );
+      }
       return (
-        <VideoWrapper title={highlight.title}>
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`}
-            className="absolute inset-0 w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </VideoWrapper>
+        <iframe
+          key="playing"
+          src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`}
+          className="absolute inset-0 w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
       );
     }
-    return (
-      <ThumbnailPreview
-        title={highlight.title}
-        thumbnailUrl={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
-        onPlay={() => setPlaying(true)}
-      />
-    );
-  }
-
-  // Vimeo: direct embed (Vimeo's player has its own built-in thumbnail + play button)
-  if (video.platform === "vimeo") {
-    return (
-      <VideoWrapper title={highlight.title}>
+    if (video.platform === "vimeo") {
+      return (
         <iframe
           src={`https://player.vimeo.com/video/${video.id}?title=0&byline=0&portrait=0`}
           className="absolute inset-0 w-full h-full"
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
         />
-      </VideoWrapper>
-    );
-  }
-
-  // Wistia: direct embed (Wistia's player has its own built-in thumbnail + play button)
-  if (video.platform === "wistia") {
-    return (
-      <VideoWrapper title={highlight.title}>
+      );
+    }
+    if (video.platform === "wistia") {
+      return (
         <iframe
           src={`https://fast.wistia.net/embed/iframe/${video.id}?seo=true&videoFoam=false`}
           className="absolute inset-0 w-full h-full"
           allow="autoplay; fullscreen"
           allowFullScreen
         />
-      </VideoWrapper>
-    );
-  }
-
-  // Unknown platform: link out
-  return (
-    <div>
+      );
+    }
+    return (
       <a
         href={highlight.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="relative w-full aspect-video flex items-center justify-center bg-white/5 group"
+        className="absolute inset-0 flex items-center justify-center bg-white/5 group"
       >
         <div className="text-center">
           <div className="w-14 h-14 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center mx-auto mb-2 transition-colors">
@@ -79,57 +85,15 @@ function VideoCard({ highlight }: { highlight: Highlight }) {
           <span className="text-xs text-white/40">Watch Video</span>
         </div>
       </a>
-      <div className="px-4 py-3">
-        <h3 className="text-sm font-medium">{highlight.title}</h3>
-      </div>
-    </div>
-  );
-}
+    );
+  })();
 
-function VideoWrapper({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div>
-      <div className="relative w-full aspect-video">{children}</div>
-      <div className="px-4 py-3">
-        <h3 className="text-sm font-medium">{title}</h3>
+    <div className="w-full">
+      <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden">
+        {embed}
       </div>
-    </div>
-  );
-}
-
-function ThumbnailPreview({
-  title,
-  thumbnailUrl,
-  onPlay,
-}: {
-  title: string;
-  thumbnailUrl: string;
-  onPlay: () => void;
-}) {
-  return (
-    <div>
-      <button
-        onClick={onPlay}
-        className="relative w-full aspect-video group cursor-pointer block"
-      >
-        <Image
-          src={thumbnailUrl}
-          alt={title}
-          fill
-          className="object-cover"
-          unoptimized
-        />
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-          <div className="w-16 h-16 rounded-full bg-white/90 group-hover:bg-white flex items-center justify-center transition-colors shadow-lg">
-            <svg viewBox="0 0 24 24" fill="#0a0a0a" className="w-7 h-7 ml-1">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-        </div>
-      </button>
-      <div className="px-4 py-3">
-        <h3 className="text-sm font-medium">{title}</h3>
-      </div>
+      <p className="mt-3 text-sm font-medium text-white/80 text-center">{highlight.title}</p>
     </div>
   );
 }
@@ -139,7 +103,19 @@ interface HighlightsSectionProps {
 }
 
 export default function HighlightsSection({ highlights }: HighlightsSectionProps) {
+  const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+
   if (highlights.length === 0) return null;
+
+  function go(next: number) {
+    setDirection(next > index ? 1 : -1);
+    setIndex(next);
+  }
+
+  function prev() { if (index > 0) go(index - 1); }
+  function next() { if (index < highlights.length - 1) go(index + 1); }
 
   return (
     <section className="px-5 py-12 lg:max-w-4xl lg:mx-auto lg:py-16">
@@ -151,30 +127,84 @@ export default function HighlightsSection({ highlights }: HighlightsSectionProps
       >
         {/* Section label */}
         <div className="flex items-center gap-3 mb-6">
-          <div
-            className="w-1 h-6 rounded-full"
-            style={{ backgroundColor: "var(--accent)" }}
-          />
-          <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-white/50">
-            Highlights
-          </h2>
+          <div className="w-1 h-6 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
+          <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-white/50">Highlights</h2>
+          {highlights.length > 1 && (
+            <span className="ml-auto text-xs text-white/30">{index + 1} / {highlights.length}</span>
+          )}
         </div>
 
-        {/* Video cards */}
-        <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-5">
-          {highlights.map((highlight, i) => (
+        {/* Carousel */}
+        <div
+          className="relative overflow-hidden"
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null) return;
+            const diff = touchStartX.current - e.changedTouches[0].clientX;
+            if (diff > 50) next();
+            else if (diff < -50) prev();
+            touchStartX.current = null;
+          }}
+        >
+          <AnimatePresence mode="wait" initial={false} custom={direction}>
             <motion.div
-              key={highlight.url}
-              className="rounded-xl overflow-hidden bg-white/5"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.15 }}
+              key={index}
+              custom={direction}
+              variants={{
+                enter: (d: number) => ({ x: d > 0 ? "100%" : "-100%", opacity: 0 }),
+                center: { x: 0, opacity: 1 },
+                exit: (d: number) => ({ x: d > 0 ? "-100%" : "100%", opacity: 0 }),
+              }}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <VideoCard highlight={highlight} />
+              <VideoSlide highlight={highlights[index]} active={true} />
             </motion.div>
-          ))}
+          </AnimatePresence>
         </div>
+
+        {/* Controls */}
+        {highlights.length > 1 && (
+          <div className="flex items-center justify-center gap-4 mt-5">
+            <button
+              onClick={prev}
+              disabled={index === 0}
+              className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+
+            {/* Dots */}
+            <div className="flex gap-1.5">
+              {highlights.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => go(i)}
+                  className="rounded-full transition-all duration-200"
+                  style={{
+                    width: i === index ? "20px" : "6px",
+                    height: "6px",
+                    backgroundColor: i === index ? "var(--accent)" : "rgba(255,255,255,0.2)",
+                  }}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={next}
+              disabled={index === highlights.length - 1}
+              className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        )}
       </motion.div>
     </section>
   );
