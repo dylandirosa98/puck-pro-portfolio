@@ -2,9 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Player } from "@/lib/types";
+import MediaCarousel from "./MediaCarousel";
 
 export default function InterestsSection({ player }: { player: Player }) {
-  if (!player.interests) return null;
+  const media = (player.interestsMedia ?? []).filter((m) => m.url?.trim());
+  if (!player.interests && media.length === 0) return null;
 
   return (
     <section className="px-5 py-10 lg:max-w-4xl lg:mx-auto">
@@ -20,9 +22,16 @@ export default function InterestsSection({ player }: { player: Player }) {
             Outside the Rink
           </h2>
         </div>
-        <p className="text-white/70 text-sm lg:text-base leading-relaxed">
-          {player.interests}
-        </p>
+        {player.interests && (
+          <p className="text-white/70 text-sm lg:text-base leading-relaxed">
+            {player.interests}
+          </p>
+        )}
+        {media.length > 0 && (
+          <div className={player.interests ? "mt-6" : ""}>
+            <MediaCarousel items={media} accentColor={player.themeColor} />
+          </div>
+        )}
       </motion.div>
     </section>
   );

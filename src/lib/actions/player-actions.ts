@@ -44,11 +44,14 @@ export async function createPlayer(formData: FormData) {
     skillsets: JSON.parse((formData.get("skillsets") as string) || "[]"),
     section_order: JSON.parse((formData.get("sectionOrder") as string) || "[]"),
     interests: (formData.get("interests") as string) || null,
+    interests_media: JSON.parse((formData.get("interestsMedia") as string) || "[]"),
     training_video_url: (formData.get("trainingVideoUrl") as string) || null,
     training_description: (formData.get("trainingDescription") as string) || null,
     training_videos: JSON.parse((formData.get("trainingVideos") as string) || "[]"),
     transcript_url: (formData.get("transcriptUrl") as string) || null,
-    watch_url: (formData.get("watchUrl") as string) || null,
+    show_stats_bar: formData.get("showStatsBar") !== "false",
+    media: JSON.parse((formData.get("media") as string) || "[]"),
+    timeline: JSON.parse((formData.get("timeline") as string) || "[]"),
     is_published: formData.get("isPublished") === "true",
   };
 
@@ -101,11 +104,14 @@ export async function updatePlayer(id: string, formData: FormData) {
     skillsets: JSON.parse((formData.get("skillsets") as string) || "[]"),
     section_order: JSON.parse((formData.get("sectionOrder") as string) || "[]"),
     interests: (formData.get("interests") as string) || null,
+    interests_media: JSON.parse((formData.get("interestsMedia") as string) || "[]"),
     training_video_url: (formData.get("trainingVideoUrl") as string) || null,
     training_description: (formData.get("trainingDescription") as string) || null,
     training_videos: JSON.parse((formData.get("trainingVideos") as string) || "[]"),
     transcript_url: (formData.get("transcriptUrl") as string) || null,
-    watch_url: (formData.get("watchUrl") as string) || null,
+    show_stats_bar: formData.get("showStatsBar") !== "false",
+    media: JSON.parse((formData.get("media") as string) || "[]"),
+    timeline: JSON.parse((formData.get("timeline") as string) || "[]"),
     is_published: formData.get("isPublished") === "true",
   };
 

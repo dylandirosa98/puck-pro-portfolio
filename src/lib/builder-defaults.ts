@@ -1,0 +1,25 @@
+import { WizardState } from "@/lib/types";
+
+export const BUILDER_DEFAULTS: WizardState = {
+  firstName: "",
+  lastName: "",
+  position: "Forward",
+  number: 0,
+  team: "",
+  league: "",
+  hometown: "",
+  height: "",
+  weight: "",
+  shoots: "Left",
+  birthYear: 2005,
+  bio: "",
+  headshotUrl: "",
+  heroImageUrl: "",
+  themeColor: "#b91c1c",
+  currentStats: { gamesPlayed: 0, goals: 0, assists: 0, points: 0, plusMinus: 0, pim: 0 },
+  seasonHistory: [],
+  highlightReelUrl: "",
+  highlights: [],
+  socialLinks: [],
+  resumeUrl: "",
+};

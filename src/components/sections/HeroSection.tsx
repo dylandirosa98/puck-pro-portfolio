@@ -85,14 +85,6 @@ export default function HeroSection({ player }: HeroSectionProps) {
               {player.number}
             </motion.span>
 
-            {/* Team + League */}
-            <div className="mb-3">
-              {player.league && (
-                <div className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-0.5">{player.league}</div>
-              )}
-              <div className="text-sm lg:text-base font-semibold text-white/75 tracking-wide">{player.team}</div>
-            </div>
-
             {/* Name */}
             <h1 className="text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.9] tracking-tight">
               <span className="block text-white/40 text-2xl sm:text-3xl lg:text-4xl font-medium mb-1">
@@ -108,11 +100,9 @@ export default function HeroSection({ player }: HeroSectionProps) {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <span>{player.position}</span>
-              <span>|</span>
-              <span>{player.height}</span>
-              <span>|</span>
-              <span>Shoots {player.shoots}</span>
+              {player.team && <span>{player.team}</span>}
+              {player.team && player.league && <span>|</span>}
+              {player.league && <span>{player.league}</span>}
             </motion.div>
           </motion.div>
 

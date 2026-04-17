@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { createPlayer, updatePlayer } from "@/lib/actions/player-actions";
 import ImageUpload from "./ImageUpload";
 import PdfUpload from "./PdfUpload";
-import type { PlayerWithMeta, PlayerStats, SeasonStats, Highlight, SocialLink } from "@/lib/types";
+import MediaPhotoUpload from "./MediaPhotoUpload";
+import type { PlayerWithMeta, PlayerStats, SeasonStats, Highlight, SocialLink, MediaItem } from "@/lib/types";
 
 interface PlayerFormProps {
   player?: PlayerWithMeta;
@@ -79,6 +80,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   );
 
   const [highlights, setHighlights] = useState<Highlight[]>(player?.highlights ?? []);
+  const [media, setMedia] = useState<MediaItem[]>(player?.media ?? []);
 
   // Social Links
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(
@@ -89,25 +91,33 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [themeColor, setThemeColor] = useState(player?.themeColor ?? "#b91c1c");
   const [highlightReelUrl, setHighlightReelUrl] = useState(player?.highlightReelUrl ?? "");
   const [resumeUrl, setResumeUrl] = useState(player?.resumeUrl ?? "");
-  const [skillsets, setSkillsets] = useState<{ name: string; description: string }[]>(player?.skillsets ?? []);
+  const [skillsets, setSkillsets] = useState<{ name: string; description: string; watchUrl?: string }[]>(player?.skillsets ?? []);
   const [sectionOrder, setSectionOrder] = useState<string[]>(() => {
+    const ALL_SECTIONS = ["about", "skillsets", "interests", "training", "timeline", "career-stats", "highlights"];
     const raw = player?.sectionOrder && player.sectionOrder.length > 0
       ? player.sectionOrder
-      : ["about", "skillsets", "interests", "training", "career-stats", "highlights"];
-    // Remove legacy "stats" key, ensure "about" is present
+      : ALL_SECTIONS;
+    // Remove legacy "stats" key, ensure "about" is present, add any missing sections
     const cleaned = raw.filter((k) => k !== "stats");
     if (!cleaned.includes("about")) cleaned.unshift("about");
+    // Append any newly-added sections that aren't in the saved order
+    for (const s of ALL_SECTIONS) {
+      if (!cleaned.includes(s)) cleaned.push(s);
+    }
     return cleaned;
   });
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [interests, setInterests] = useState(player?.interests ?? "");
-  const [trainingVideos, setTrainingVideos] = useState<{ url: string; description: string }[]>(() => {
-    if (player?.trainingVideos && player.trainingVideos.length > 0) return player.trainingVideos;
-    if (player?.trainingVideoUrl) return [{ url: player.trainingVideoUrl, description: player.trainingDescription ?? "" }];
+  const [interestsMedia, setInterestsMedia] = useState<MediaItem[]>(player?.interestsMedia ?? []);
+  const [trainingVideos, setTrainingVideos] = useState<{ url: string }[]>(() => {
+    if (player?.trainingVideos && player.trainingVideos.length > 0) return player.trainingVideos.map((v) => ({ url: v.url }));
+    if (player?.trainingVideoUrl) return [{ url: player.trainingVideoUrl }];
     return [];
   });
+  const [trainingDescription, setTrainingDescription] = useState(player?.trainingDescription ?? "");
+  const [timeline, setTimeline] = useState<{ title: string; description: string; media: MediaItem[] }[]>(player?.timeline ?? []);
   const [transcriptUrl, setTranscriptUrl] = useState(player?.transcriptUrl ?? "");
-  const [watchUrl, setWatchUrl] = useState(player?.watchUrl ?? "");
+  const [showStatsBar, setShowStatsBar] = useState(player?.showStatsBar ?? true);
   const [isPublished, setIsPublished] = useState(player?.isPublished ?? false);
 
   const [saving, setSaving] = useState(false);
@@ -144,6 +154,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     formData.set("currentStats", JSON.stringify(currentStats));
     formData.set("seasonHistory", JSON.stringify(seasonHistory));
     formData.set("highlights", JSON.stringify(highlights));
+    formData.set("media", JSON.stringify(media));
     formData.set("socialLinks", JSON.stringify(socialLinks));
     formData.set("themeColor", themeColor);
     formData.set("highlightReelUrl", highlightReelUrl);
@@ -151,9 +162,12 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     formData.set("skillsets", JSON.stringify(skillsets));
     formData.set("sectionOrder", JSON.stringify(sectionOrder));
     formData.set("interests", interests);
+    formData.set("interestsMedia", JSON.stringify(interestsMedia));
     formData.set("trainingVideos", JSON.stringify(trainingVideos));
+    formData.set("trainingDescription", trainingDescription);
+    formData.set("timeline", JSON.stringify(timeline));
     formData.set("transcriptUrl", transcriptUrl);
-    formData.set("watchUrl", watchUrl);
+    formData.set("showStatsBar", String(showStatsBar));
     formData.set("isPublished", String(isPublished));
 
     const result = isEdit
@@ -238,6 +252,78 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           <label className={labelClass}>Bio</label>
           <textarea className={`${inputClass} min-h-[100px]`} value={bio} onChange={(e) => setBio(e.target.value)} />
         </div>
+      </fieldset>
+
+      {/* Media Carousel */}
+      <fieldset className={sectionClass}>
+        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+          Media (Photos &amp; Videos)
+        </legend>
+        {media.map((item, i) => (
+          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/40">Item {i + 1}</span>
+              <button
+                type="button"
+                onClick={() => setMedia(media.filter((_, j) => j !== i))}
+                className="text-xs text-red-400/60 hover:text-red-400"
+              >
+                Remove
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Type</label>
+                <select
+                  className={inputClass}
+                  value={item.type}
+                  onChange={(e) => setMedia(media.map((m, j) => j === i ? { ...m, type: e.target.value as "photo" | "video" } : m))}
+                >
+                  <option value="photo">Photo</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Title <span className="text-white/20 font-normal">(optional)</span></label>
+                <input
+                  className={inputClass}
+                  value={item.title ?? ""}
+                  onChange={(e) => setMedia(media.map((m, j) => j === i ? { ...m, title: e.target.value } : m))}
+                  placeholder="Caption..."
+                />
+              </div>
+            </div>
+            {item.type === "photo" ? (
+              <div>
+                <label className={labelClass}>Photo</label>
+                <MediaPhotoUpload
+                  slug={slug}
+                  index={i}
+                  currentUrl={item.url}
+                  onUpload={(url) => setMedia(media.map((m, j) => j === i ? { ...m, url } : m))}
+                />
+              </div>
+            ) : (
+              <div>
+                <label className={labelClass}>Video URL</label>
+                <input
+                  className={inputClass}
+                  value={item.url}
+                  onChange={(e) => setMedia(media.map((m, j) => j === i ? { ...m, url: e.target.value } : m))}
+                  placeholder="YouTube, Vimeo, or Google Drive link"
+                />
+              </div>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setMedia([...media, { type: "photo", url: "", title: "" }])}
+          className="w-full py-2 rounded-lg border border-dashed border-white/20 text-xs text-white/40 hover:text-white/60 hover:border-white/30 transition-colors"
+        >
+          + Add Photo or Video
+        </button>
+        <p className="text-[10px] text-white/20">Shows as a carousel below the About section. Leave empty to hide.</p>
       </fieldset>
 
       {/* URL Slug */}
@@ -547,8 +633,18 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           Player Profile / Skillsets
         </legend>
         {skillsets.map((skill, i) => (
-          <div key={i} className="flex gap-3 items-start">
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/40">Skill {i + 1}</span>
+              <button
+                type="button"
+                onClick={() => setSkillsets(skillsets.filter((_, j) => j !== i))}
+                className="text-xs text-red-400/60 hover:text-red-400"
+              >
+                Remove
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Skill Name</label>
                 <input
@@ -576,18 +672,24 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 />
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setSkillsets(skillsets.filter((_, j) => j !== i))}
-              className="mt-6 text-white/20 hover:text-red-400 text-lg leading-none transition-colors"
-            >
-              ×
-            </button>
+            <div>
+              <label className={labelClass}>Watch Here URL <span className="text-white/20 font-normal">(optional)</span></label>
+              <input
+                className={inputClass}
+                value={skill.watchUrl ?? ""}
+                onChange={(e) => {
+                  const updated = [...skillsets];
+                  updated[i] = { ...updated[i], watchUrl: e.target.value };
+                  setSkillsets(updated);
+                }}
+                placeholder="YouTube, Vimeo, or Google Drive link for this skill"
+              />
+            </div>
           </div>
         ))}
         <button
           type="button"
-          onClick={() => setSkillsets([...skillsets, { name: "", description: "" }])}
+          onClick={() => setSkillsets([...skillsets, { name: "", description: "", watchUrl: "" }])}
           className="text-xs text-white/40 hover:text-white/70 px-3 py-2 border border-dashed border-white/10 rounded-lg hover:border-white/30 transition-colors w-full"
         >
           + Add Skillset
@@ -607,7 +709,71 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           onChange={(e) => setInterests(e.target.value)}
           placeholder="Describe the player's interests and life outside hockey..."
         />
-        <p className="text-[10px] text-white/20 mt-1">Shows as a separate section on the profile. Leave blank to hide.</p>
+        {interestsMedia.map((item, i) => (
+          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/40">Item {i + 1}</span>
+              <button
+                type="button"
+                onClick={() => setInterestsMedia(interestsMedia.filter((_, j) => j !== i))}
+                className="text-xs text-red-400/60 hover:text-red-400"
+              >
+                Remove
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Type</label>
+                <select
+                  className={inputClass}
+                  value={item.type}
+                  onChange={(e) => setInterestsMedia(interestsMedia.map((m, j) => j === i ? { ...m, type: e.target.value as "photo" | "video" } : m))}
+                >
+                  <option value="photo">Photo</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Title <span className="text-white/20 font-normal">(optional)</span></label>
+                <input
+                  className={inputClass}
+                  value={item.title ?? ""}
+                  onChange={(e) => setInterestsMedia(interestsMedia.map((m, j) => j === i ? { ...m, title: e.target.value } : m))}
+                  placeholder="Caption..."
+                />
+              </div>
+            </div>
+            {item.type === "photo" ? (
+              <div>
+                <label className={labelClass}>Photo</label>
+                <MediaPhotoUpload
+                  slug={slug}
+                  index={i + 100}
+                  currentUrl={item.url}
+                  onUpload={(url) => setInterestsMedia(interestsMedia.map((m, j) => j === i ? { ...m, url } : m))}
+                />
+              </div>
+            ) : (
+              <div>
+                <label className={labelClass}>Video URL</label>
+                <input
+                  className={inputClass}
+                  value={item.url}
+                  onChange={(e) => setInterestsMedia(interestsMedia.map((m, j) => j === i ? { ...m, url: e.target.value } : m))}
+                  placeholder="YouTube, Vimeo, or Google Drive link"
+                />
+              </div>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setInterestsMedia([...interestsMedia, { type: "photo", url: "", title: "" }])}
+          className="w-full py-2 rounded-lg border border-dashed border-white/20 text-xs text-white/40 hover:text-white/60 hover:border-white/30 transition-colors"
+        >
+          + Add Photo or Video
+        </button>
+        <p className="text-[10px] text-white/20">Shows as a separate section on the profile. Leave both blank to hide.</p>
       </fieldset>
 
       {/* Training */}
@@ -632,30 +798,30 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               <input
                 className={inputClass}
                 value={tv.url}
-                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { ...t, url: e.target.value } : t))}
+                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { url: e.target.value } : t))}
                 placeholder="YouTube, Vimeo, or Google Drive link"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Description</label>
-              <textarea
-                className={inputClass}
-                rows={3}
-                value={tv.description}
-                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { ...t, description: e.target.value } : t))}
-                placeholder="e.g. Works on edge work, shot release, and defensive positioning."
               />
             </div>
           </div>
         ))}
         <button
           type="button"
-          onClick={() => setTrainingVideos([...trainingVideos, { url: "", description: "" }])}
+          onClick={() => setTrainingVideos([...trainingVideos, { url: "" }])}
           className="w-full py-2 rounded-lg border border-dashed border-white/20 text-xs text-white/40 hover:text-white/60 hover:border-white/30 transition-colors"
         >
           + Add Training Video
         </button>
-        <p className="text-[10px] text-white/20">Add one or more training videos. Leave empty to hide the Training section.</p>
+        <div>
+          <label className={labelClass}>Description</label>
+          <textarea
+            className={inputClass}
+            rows={3}
+            value={trainingDescription}
+            onChange={(e) => setTrainingDescription(e.target.value)}
+            placeholder="e.g. Regularly trains with Coach X, focusing on edge work and shot release."
+          />
+        </div>
+        <p className="text-[10px] text-white/20">Videos carousel shown first, description below. Leave both empty to hide.</p>
       </fieldset>
 
       {/* Academics */}
@@ -675,21 +841,118 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         </div>
       </fieldset>
 
-      {/* Watch Here */}
+
+      {/* Timeline */}
       <fieldset className={sectionClass}>
         <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
-          Watch Here Button
+          Hockey Timeline
         </legend>
-        <div>
-          <label className={labelClass}>Watch URL</label>
-          <input
-            className={inputClass}
-            value={watchUrl}
-            onChange={(e) => setWatchUrl(e.target.value)}
-            placeholder="YouTube, Vimeo, or Google Drive folder/file link"
-          />
-          <p className="text-[10px] text-white/20 mt-1">Shows as a &quot;Watch Here&quot; button on the player card. Leave blank to hide.</p>
-        </div>
+        {timeline.map((entry, i) => (
+          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/40">Entry {i + 1}</span>
+              <button
+                type="button"
+                onClick={() => setTimeline(timeline.filter((_, j) => j !== i))}
+                className="text-xs text-red-400/60 hover:text-red-400"
+              >
+                Remove
+              </button>
+            </div>
+            <div>
+              <label className={labelClass}>Title</label>
+              <input
+                className={inputClass}
+                value={entry.title}
+                onChange={(e) => setTimeline(timeline.map((t, j) => j === i ? { ...t, title: e.target.value } : t))}
+                placeholder="e.g. 2023-24 Season, AAA Bantam..."
+              />
+            </div>
+            {/* Media items */}
+            {entry.media.map((item, mi) => (
+              <div key={mi} className="rounded-lg border border-white/5 p-2.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-white/30">Media {mi + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.filter((_, k) => k !== mi) } : t))}
+                    className="text-xs text-red-400/60 hover:text-red-400"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className={labelClass}>Type</label>
+                    <select
+                      className={inputClass}
+                      value={item.type}
+                      onChange={(e) => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.map((m, k) => k === mi ? { ...m, type: e.target.value as "photo" | "video" } : m) } : t))}
+                    >
+                      <option value="photo">Photo</option>
+                      <option value="video">Video</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Caption <span className="text-white/20 font-normal">(opt)</span></label>
+                    <input
+                      className={inputClass}
+                      value={item.title ?? ""}
+                      onChange={(e) => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.map((m, k) => k === mi ? { ...m, title: e.target.value } : m) } : t))}
+                      placeholder="Caption..."
+                    />
+                  </div>
+                </div>
+                {item.type === "photo" ? (
+                  <div>
+                    <label className={labelClass}>Photo</label>
+                    <MediaPhotoUpload
+                      slug={slug}
+                      index={i * 100 + mi + 200}
+                      currentUrl={item.url}
+                      onUpload={(url) => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.map((m, k) => k === mi ? { ...m, url } : m) } : t))}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className={labelClass}>Video URL</label>
+                    <input
+                      className={inputClass}
+                      value={item.url}
+                      onChange={(e) => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.map((m, k) => k === mi ? { ...m, url: e.target.value } : m) } : t))}
+                      placeholder="YouTube, Vimeo, or Google Drive link"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: [...t.media, { type: "photo" as const, url: "", title: "" }] } : t))}
+              className="w-full py-1.5 rounded-lg border border-dashed border-white/10 text-xs text-white/30 hover:text-white/50 hover:border-white/20 transition-colors"
+            >
+              + Add Photo or Video
+            </button>
+            <div>
+              <label className={labelClass}>Description</label>
+              <textarea
+                className={inputClass}
+                rows={3}
+                value={entry.description}
+                onChange={(e) => setTimeline(timeline.map((t, j) => j === i ? { ...t, description: e.target.value } : t))}
+                placeholder="Describe this period in the player's journey..."
+              />
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setTimeline([...timeline, { title: "", description: "", media: [] }])}
+          className="w-full py-2 rounded-lg border border-dashed border-white/20 text-xs text-white/40 hover:text-white/60 hover:border-white/30 transition-colors"
+        >
+          + Add Timeline Entry
+        </button>
+        <p className="text-[10px] text-white/20">Each entry expands as a dropdown. Media carousel shown first, description below.</p>
       </fieldset>
 
       {/* Section Order */}
@@ -714,6 +977,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               skillsets: "Player Profile / Skillsets",
               interests: "Outside the Rink",
               training: "Training",
+              timeline: "Hockey Timeline",
               "career-stats": "Career Stats",
               highlights: "Highlights",
             };
@@ -785,6 +1049,27 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               currentUrl={resumeUrl}
               onUpload={setResumeUrl}
             />
+          </div>
+          <div>
+            <label className={labelClass}>Stats Bar</label>
+            <label className="flex items-center gap-3 mt-1 cursor-pointer">
+              <button
+                type="button"
+                onClick={() => setShowStatsBar(!showStatsBar)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  showStatsBar ? "bg-blue-500" : "bg-white/20"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    showStatsBar ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span className="text-sm text-white/50">
+                {showStatsBar ? "Visible" : "Hidden"}
+              </span>
+            </label>
           </div>
           <div>
             <label className={labelClass}>Published</label>

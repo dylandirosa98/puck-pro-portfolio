@@ -71,20 +71,6 @@ export default async function AdminDashboard() {
               </div>
 
               <div className="flex items-center gap-4">
-                {player.watchUrl && (
-                  <a
-                    href={player.watchUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors"
-                    style={{ backgroundColor: `${player.themeColor}33`, color: player.themeColor }}
-                  >
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                    Watch Here
-                  </a>
-                )}
                 <PublishToggle
                   playerId={player.id}
                   initialPublished={player.isPublished}

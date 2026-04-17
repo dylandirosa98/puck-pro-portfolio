@@ -6,25 +6,16 @@ import { Player } from "@/lib/types";
 import VideoModal from "@/components/VideoModal";
 import { detectVideo, getEmbedUrl } from "@/lib/video";
 
-interface TrainingSlideProps {
-  url: string;
-  description: string;
-  themeColor: string;
-}
-
-function TrainingSlide({ url, description, themeColor }: TrainingSlideProps) {
+function VideoSlide({ url, themeColor }: { url: string; themeColor: string }) {
   const [showModal, setShowModal] = useState(false);
-
   const video = detectVideo(url);
   const embedUrl = getEmbedUrl(video);
 
   return (
-    <div className="flex flex-col sm:flex-row gap-6 lg:gap-10 items-start">
-      <motion.div
-        className="relative w-full sm:w-64 lg:w-80 flex-shrink-0 aspect-video rounded-xl overflow-hidden bg-white/5 cursor-pointer group"
+    <div className="w-full">
+      <div
+        className="relative w-full aspect-video rounded-xl overflow-hidden bg-white/5 cursor-pointer group"
         onClick={() => setShowModal(true)}
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.2 }}
       >
         {embedUrl ? (
           <iframe
@@ -34,10 +25,7 @@ function TrainingSlide({ url, description, themeColor }: TrainingSlideProps) {
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: `${themeColor}40` }}
-            >
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: `${themeColor}40` }}>
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6" style={{ color: themeColor }}>
                 <path d="M8 5v14l11-7z" />
               </svg>
@@ -45,23 +33,13 @@ function TrainingSlide({ url, description, themeColor }: TrainingSlideProps) {
           </div>
         )}
         <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-          <div
-            className="w-12 h-12 rounded-full flex items-center justify-center opacity-90"
-            style={{ backgroundColor: themeColor }}
-          >
+          <div className="w-12 h-12 rounded-full flex items-center justify-center opacity-90" style={{ backgroundColor: themeColor }}>
             <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5 ml-0.5">
               <path d="M8 5v14l11-7z" />
             </svg>
           </div>
         </div>
-      </motion.div>
-
-      {description && (
-        <div className="flex-1">
-          <p className="text-white/70 text-sm lg:text-base leading-relaxed">{description}</p>
-        </div>
-      )}
-
+      </div>
       <VideoModal url={url} isOpen={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
@@ -73,7 +51,9 @@ export default function TrainingSection({ player }: { player: Player }) {
   const touchStartX = useRef<number | null>(null);
 
   const videos = (player.trainingVideos ?? []).filter((v) => v.url?.trim());
-  if (videos.length === 0) return null;
+  const description = player.trainingDescription ?? "";
+
+  if (videos.length === 0 && !description) return null;
 
   function go(next: number) {
     setDirection(next > index ? 1 : -1);
@@ -98,77 +78,61 @@ export default function TrainingSection({ player }: { player: Player }) {
           )}
         </div>
 
-        <div
-          className="relative overflow-hidden"
-          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
-          onTouchEnd={(e) => {
-            if (touchStartX.current === null) return;
-            const diff = touchStartX.current - e.changedTouches[0].clientX;
-            if (diff > 50) next();
-            else if (diff < -50) prev();
-            touchStartX.current = null;
-          }}
-        >
-          <AnimatePresence mode="wait" initial={false} custom={direction}>
-            <motion.div
-              key={index}
-              custom={direction}
-              variants={{
-                enter: (d: number) => ({ x: d > 0 ? "100%" : "-100%", opacity: 0 }),
-                center: { x: 0, opacity: 1 },
-                exit: (d: number) => ({ x: d > 0 ? "-100%" : "100%", opacity: 0 }),
+        {videos.length > 0 && (
+          <>
+            <div
+              className="relative overflow-hidden"
+              onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+              onTouchEnd={(e) => {
+                if (touchStartX.current === null) return;
+                const diff = touchStartX.current - e.changedTouches[0].clientX;
+                if (diff > 50) next();
+                else if (diff < -50) prev();
+                touchStartX.current = null;
               }}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <TrainingSlide
-                url={videos[index].url}
-                description={videos[index].description}
-                themeColor={player.themeColor}
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {videos.length > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-5">
-            <button
-              onClick={prev}
-              disabled={index === 0}
-              className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-
-            <div className="flex gap-1.5">
-              {videos.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => go(i)}
-                  className="rounded-full transition-all duration-200"
-                  style={{
-                    width: i === index ? "20px" : "6px",
-                    height: "6px",
-                    backgroundColor: i === index ? "var(--accent)" : "rgba(255,255,255,0.2)",
+              <AnimatePresence mode="wait" initial={false} custom={direction}>
+                <motion.div
+                  key={index}
+                  custom={direction}
+                  variants={{
+                    enter: (d: number) => ({ x: d > 0 ? "100%" : "-100%", opacity: 0 }),
+                    center: { x: 0, opacity: 1 },
+                    exit: (d: number) => ({ x: d > 0 ? "-100%" : "100%", opacity: 0 }),
                   }}
-                />
-              ))}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <VideoSlide url={videos[index].url} themeColor={player.themeColor} />
+                </motion.div>
+              </AnimatePresence>
             </div>
 
-            <button
-              onClick={next}
-              disabled={index === videos.length - 1}
-              className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
+            {videos.length > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-5">
+                <button onClick={prev} disabled={index === 0} className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M15 18l-6-6 6-6" /></svg>
+                </button>
+                <div className="flex gap-1.5">
+                  {videos.map((_, i) => (
+                    <button key={i} onClick={() => go(i)} className="rounded-full transition-all duration-200"
+                      style={{ width: i === index ? "20px" : "6px", height: "6px", backgroundColor: i === index ? "var(--accent)" : "rgba(255,255,255,0.2)" }} />
+                  ))}
+                </div>
+                <button onClick={next} disabled={index === videos.length - 1} className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M9 18l6-6-6-6" /></svg>
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {description && (
+          <p className={`text-white/70 text-sm lg:text-base leading-relaxed ${videos.length > 0 ? "mt-6" : ""}`}>
+            {description}
+          </p>
         )}
       </motion.div>
     </section>

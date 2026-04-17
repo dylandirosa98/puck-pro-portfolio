@@ -3,12 +3,15 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Player } from "@/lib/types";
+import MediaCarousel from "./MediaCarousel";
 
 interface BioSectionProps {
   player: Player;
 }
 
 export default function BioSection({ player }: BioSectionProps) {
+  const media = (player.media ?? []).filter((m) => m.url?.trim());
+
   return (
     <section className="px-5 py-12 lg:max-w-4xl lg:mx-auto lg:py-16">
       <motion.div
@@ -48,25 +51,15 @@ export default function BioSection({ player }: BioSectionProps) {
           {/* Bio text */}
           <div className="flex-1">
             <p className="text-white/70 text-sm lg:text-base leading-relaxed">{player.bio}</p>
-
-            {/* Quick details */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 lg:gap-x-10 gap-y-2 mt-5">
-              {[
-                { label: "Position", value: player.position },
-                { label: "Shoots", value: player.shoots },
-                { label: "Height", value: player.height },
-                { label: "Weight", value: player.weight },
-              ].map((item) => (
-                <div key={item.label} className="flex justify-between items-baseline gap-3 border-b border-white/5 py-2 min-w-0">
-                  <span className="text-[11px] text-white/30 uppercase tracking-wider flex-shrink-0">
-                    {item.label}
-                  </span>
-                  <span className="text-sm font-medium text-right truncate" title={item.value}>{item.value}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
+
+        {/* Media carousel — no label, just flows below bio */}
+        {media.length > 0 && (
+          <div className="mt-6">
+            <MediaCarousel items={media} accentColor={player.themeColor} />
+          </div>
+        )}
       </motion.div>
     </section>
   );

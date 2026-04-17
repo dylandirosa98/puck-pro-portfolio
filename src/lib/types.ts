@@ -24,6 +24,18 @@ export interface SocialLink {
   url: string;
 }
 
+export interface MediaItem {
+  type: "photo" | "video";
+  url: string;
+  title?: string;
+}
+
+export interface TimelineEntry {
+  title: string;
+  description: string;
+  media: MediaItem[];
+}
+
 export interface Player {
   slug: string;
   firstName: string;
@@ -47,14 +59,41 @@ export interface Player {
   themeColor: string;
   highlightReelUrl?: string;
   resumeUrl?: string;
-  skillsets?: { name: string; description: string }[];
+  skillsets?: { name: string; description: string; watchUrl?: string }[];
   sectionOrder?: string[];
   interests?: string;
+  interestsMedia?: MediaItem[];
   trainingVideoUrl?: string;
   trainingDescription?: string;
-  trainingVideos?: { url: string; description: string }[];
-  watchUrl?: string;
+  trainingVideos?: { url: string }[];
+  timeline?: TimelineEntry[];
   transcriptUrl?: string;
+  showStatsBar?: boolean;
+  media?: MediaItem[];
+}
+
+export interface WizardState {
+  firstName: string;
+  lastName: string;
+  position: string;
+  number: number;
+  team: string;
+  league: string;
+  hometown: string;
+  height: string;
+  weight: string;
+  shoots: "Left" | "Right";
+  birthYear: number;
+  bio: string;
+  headshotUrl: string;
+  heroImageUrl: string;
+  themeColor: string;
+  currentStats: PlayerStats;
+  seasonHistory: SeasonStats[];
+  highlightReelUrl: string;
+  highlights: Highlight[];
+  socialLinks: SocialLink[];
+  resumeUrl: string;
 }
 
 export interface PlayerWithMeta extends Player {

@@ -42,6 +42,20 @@ export default function SkillsetsSection({ player }: { player: Player }) {
               {skill.description.trim() && (
                 <p className="text-xs text-white/50 leading-relaxed">{skill.description}</p>
               )}
+              {skill.watchUrl?.trim() && (
+                <a
+                  href={skill.watchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                  style={{ backgroundColor: `${player.themeColor}20`, color: player.themeColor }}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  Watch Here
+                </a>
+              )}
             </motion.div>
           ))}
         </div>
