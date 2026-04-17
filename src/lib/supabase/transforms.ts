@@ -33,6 +33,7 @@ export interface PlayerRow {
   training_description: string | null;
   training_videos: { url: string; description: string }[] | null;
   transcript_url: string | null;
+  watch_url: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -74,6 +75,7 @@ export function rowToPlayer(row: PlayerRow): PlayerWithMeta {
       return [];
     })(),
     transcriptUrl: row.transcript_url ?? undefined,
+    watchUrl: row.watch_url ?? undefined,
     isPublished: row.is_published,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -112,6 +114,7 @@ export function playerToRow(player: Partial<Player>): Record<string, unknown> {
   if (player.trainingDescription !== undefined) row.training_description = player.trainingDescription;
   if (player.trainingVideos !== undefined) row.training_videos = player.trainingVideos;
   if (player.transcriptUrl !== undefined) row.transcript_url = player.transcriptUrl;
+  if (player.watchUrl !== undefined) row.watch_url = player.watchUrl;
 
   return row;
 }

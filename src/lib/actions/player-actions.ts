@@ -48,6 +48,7 @@ export async function createPlayer(formData: FormData) {
     training_description: (formData.get("trainingDescription") as string) || null,
     training_videos: JSON.parse((formData.get("trainingVideos") as string) || "[]"),
     transcript_url: (formData.get("transcriptUrl") as string) || null,
+    watch_url: (formData.get("watchUrl") as string) || null,
     is_published: formData.get("isPublished") === "true",
   };
 
@@ -104,6 +105,7 @@ export async function updatePlayer(id: string, formData: FormData) {
     training_description: (formData.get("trainingDescription") as string) || null,
     training_videos: JSON.parse((formData.get("trainingVideos") as string) || "[]"),
     transcript_url: (formData.get("transcriptUrl") as string) || null,
+    watch_url: (formData.get("watchUrl") as string) || null,
     is_published: formData.get("isPublished") === "true",
   };
 

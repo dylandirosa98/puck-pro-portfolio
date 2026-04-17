@@ -53,6 +53,7 @@ export interface Player {
   trainingVideoUrl?: string;
   trainingDescription?: string;
   trainingVideos?: { url: string; description: string }[];
+  watchUrl?: string;
   transcriptUrl?: string;
 }
 

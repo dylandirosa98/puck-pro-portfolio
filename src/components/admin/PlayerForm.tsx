@@ -107,6 +107,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     return [];
   });
   const [transcriptUrl, setTranscriptUrl] = useState(player?.transcriptUrl ?? "");
+  const [watchUrl, setWatchUrl] = useState(player?.watchUrl ?? "");
   const [isPublished, setIsPublished] = useState(player?.isPublished ?? false);
 
   const [saving, setSaving] = useState(false);
@@ -152,6 +153,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     formData.set("interests", interests);
     formData.set("trainingVideos", JSON.stringify(trainingVideos));
     formData.set("transcriptUrl", transcriptUrl);
+    formData.set("watchUrl", watchUrl);
     formData.set("isPublished", String(isPublished));
 
     const result = isEdit
@@ -670,6 +672,23 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             placeholder="Google Drive link or PDF URL"
           />
           <p className="text-[10px] text-white/20 mt-1">Shows as an &quot;Academics&quot; button in the hero. Leave blank to hide.</p>
+        </div>
+      </fieldset>
+
+      {/* Watch Here */}
+      <fieldset className={sectionClass}>
+        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+          Watch Here Button
+        </legend>
+        <div>
+          <label className={labelClass}>Watch URL</label>
+          <input
+            className={inputClass}
+            value={watchUrl}
+            onChange={(e) => setWatchUrl(e.target.value)}
+            placeholder="YouTube, Vimeo, or Google Drive folder/file link"
+          />
+          <p className="text-[10px] text-white/20 mt-1">Shows as a &quot;Watch Here&quot; button on the player card. Leave blank to hide.</p>
         </div>
       </fieldset>
 
