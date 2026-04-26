@@ -57,7 +57,7 @@ export default function BioSection({ player }: BioSectionProps) {
         {/* Media carousel — no label, just flows below bio */}
         {media.length > 0 && (
           <div className="mt-6">
-            <MediaCarousel items={media} accentColor={player.themeColor} />
+            <MediaCarousel items={media} accentColor={player.themeColor} lightMode={player.lightMode} />
           </div>
         )}
       </motion.div>

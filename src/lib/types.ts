@@ -69,6 +69,7 @@ export interface Player {
   timeline?: TimelineEntry[];
   transcriptUrl?: string;
   showStatsBar?: boolean;
+  lightMode?: boolean;
   media?: MediaItem[];
 }
 

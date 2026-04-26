@@ -29,10 +29,11 @@ interface PlayerTemplateProps {
 export default function PlayerTemplate({ player }: PlayerTemplateProps) {
   useEffect(() => {
     const { r, g, b } = hexToRgb(player.themeColor);
+    const base = player.lightMode ? 240 : 10; // #f0f0f0 vs #0a0a0a
     const blended = {
-      r: Math.round(10 + (r - 10) * 0.25),
-      g: Math.round(10 + (g - 10) * 0.25),
-      b: Math.round(10 + (b - 10) * 0.25),
+      r: Math.round(base + (r - base) * 0.25),
+      g: Math.round(base + (g - base) * 0.25),
+      b: Math.round(base + (b - base) * 0.25),
     };
     const color = `#${blended.r.toString(16).padStart(2, "0")}${blended.g.toString(16).padStart(2, "0")}${blended.b.toString(16).padStart(2, "0")}`;
     document.documentElement.style.backgroundColor = color;
@@ -41,7 +42,7 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
     return () => {
       document.documentElement.style.backgroundColor = "";
     };
-  }, [player.themeColor]);
+  }, [player.themeColor, player.lightMode]);
 
   const rawOrder = player.sectionOrder && player.sectionOrder.length > 0
     ? player.sectionOrder
@@ -68,13 +69,13 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
       case "interests":
         return <InterestsSection key="interests" player={player} />;
       case "training":
-        return <TrainingSection key="training" player={player} />;
+        return <TrainingSection key="training" player={player} lightMode={player.lightMode} />;
       case "career-stats":
         return player.seasonHistory.length > 0
           ? <CareerStats key="career-stats" seasons={player.seasonHistory} />
           : null;
       case "highlights":
-        return <HighlightsSection key="highlights" highlights={player.highlights} />;
+        return <HighlightsSection key="highlights" highlights={player.highlights} lightMode={player.lightMode} />;
       case "timeline":
         return <TimelineSection key="timeline" player={player} />;
       default:
@@ -84,7 +85,7 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
 
   return (
     <main
-      className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden"
+      className={`min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden${player.lightMode ? " puck-light" : ""}`}
       style={{ "--accent": player.themeColor } as React.CSSProperties}
     >
       <HeroSection player={player} />
@@ -107,7 +108,7 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
 
       {(player.showStatsBar ?? true) && <StatsBar stats={player.currentStats} />}
       {order.map(renderSection)}
-      <SocialFooter socialLinks={player.socialLinks} />
+      <SocialFooter socialLinks={player.socialLinks} lightMode={player.lightMode} />
     </main>
   );
 }

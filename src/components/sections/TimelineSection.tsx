@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Player, TimelineEntry } from "@/lib/types";
 import MediaCarousel from "./MediaCarousel";
 
-function TimelineItem({ entry, accentColor, isOpen, onToggle }: {
+function TimelineItem({ entry, accentColor, isOpen, onToggle, lightMode }: {
   entry: TimelineEntry;
   accentColor: string;
   isOpen: boolean;
   onToggle: () => void;
+  lightMode?: boolean;
 }) {
   const media = (entry.media ?? []).filter((m) => m.url?.trim());
 
@@ -44,7 +45,7 @@ function TimelineItem({ entry, accentColor, isOpen, onToggle }: {
           >
             <div className="pb-6 space-y-5">
               {media.length > 0 && (
-                <MediaCarousel items={media} accentColor={accentColor} />
+                <MediaCarousel items={media} accentColor={accentColor} lightMode={lightMode} />
               )}
               {entry.description && (
                 <p className="text-white/70 text-sm lg:text-base leading-relaxed">
@@ -88,6 +89,7 @@ export default function TimelineSection({ player }: { player: Player }) {
               accentColor={player.themeColor}
               isOpen={openIndex === i}
               onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+              lightMode={player.lightMode}
             />
           ))}
         </div>

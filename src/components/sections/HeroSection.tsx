@@ -8,14 +8,13 @@ import VideoModal from "@/components/VideoModal";
 import PdfModal from "@/components/PdfModal";
 import { detectVideo } from "@/lib/video";
 
-function blendColor(hex: string, opacity: number): string {
+function blendColor(hex: string, opacity: number, bgBase = 10): string {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
-  const bg = 10; // #0a
-  const br = Math.round(bg + (r - bg) * opacity);
-  const bgr = Math.round(bg + (g - bg) * opacity);
-  const bb = Math.round(bg + (b - bg) * opacity);
+  const br = Math.round(bgBase + (r - bgBase) * opacity);
+  const bgr = Math.round(bgBase + (g - bgBase) * opacity);
+  const bb = Math.round(bgBase + (b - bgBase) * opacity);
   return `#${br.toString(16).padStart(2, "0")}${bgr.toString(16).padStart(2, "0")}${bb.toString(16).padStart(2, "0")}`;
 }
 
@@ -28,8 +27,10 @@ export default function HeroSection({ player }: HeroSectionProps) {
   const [showResume, setShowResume] = useState(false);
   const reelVideo = player.highlightReelUrl ? detectVideo(player.highlightReelUrl) : null;
   const isGdrive = reelVideo?.platform === "gdrive-folder" || reelVideo?.platform === "gdrive-file";
-  const topColor = blendColor(player.themeColor, 0.251);
-  const midColor = blendColor(player.themeColor, 0.125);
+  const bgBase = player.lightMode ? 240 : 10;
+  const bgHex = player.lightMode ? "#f0f0f0" : "#0a0a0a";
+  const topColor = blendColor(player.themeColor, player.lightMode ? 0.55 : 0.251, bgBase);
+  const midColor = blendColor(player.themeColor, player.lightMode ? 0.3 : 0.125, bgBase);
 
   return (
     <>
@@ -39,7 +40,7 @@ export default function HeroSection({ player }: HeroSectionProps) {
           className="absolute inset-0"
           style={{
             top: "calc(-1 * env(safe-area-inset-top, 0px))",
-            background: `linear-gradient(to bottom, ${topColor} 0px, ${topColor} 44px, ${midColor} 40%, #0a0a0a 100%)`,
+            background: `linear-gradient(to bottom, ${topColor} 0px, ${topColor} 44px, ${midColor} 40%, ${bgHex} 100%)`,
           }}
         />
 
@@ -62,10 +63,16 @@ export default function HeroSection({ player }: HeroSectionProps) {
         </motion.div>
 
         {/* Bottom gradient fade over the player image */}
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent" />
+        <div
+          className="absolute bottom-0 left-0 right-0 h-48"
+          style={{ background: `linear-gradient(to top, ${bgHex}, ${bgHex}cc, transparent)` }}
+        />
 
-        {/* Left-side text shadow — sits behind text, improves readability over the player image */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/70 via-[#0a0a0a]/30 to-transparent pointer-events-none" />
+        {/* Diagonal gradient — strong at bottom-left (names), fades to transparent top-right (player visible) */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `linear-gradient(to top right, ${bgHex}e6 0%, ${bgHex}bb 20%, ${bgHex}66 45%, ${bgHex}22 65%, transparent 85%)` }}
+        />
 
         {/* Content */}
         <div className="relative w-full px-5 pb-10 pt-20 z-10 lg:max-w-5xl lg:mx-auto lg:px-10 lg:pb-16">
@@ -76,18 +83,32 @@ export default function HeroSection({ player }: HeroSectionProps) {
           >
             {/* Number */}
             <motion.span
-              className="text-[8rem] lg:text-[12rem] leading-none font-black absolute bottom-0 right-4 lg:right-10 select-none"
+              className="text-[8rem] lg:text-[12rem] leading-none font-black absolute -bottom-2 right-2 lg:right-7 select-none"
               style={{ color: player.themeColor }}
               initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 0.3, x: 0 }}
+              animate={{ opacity: player.lightMode ? 0.5 : 0.3, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
               {player.number}
             </motion.span>
 
             {/* Name */}
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.9] tracking-tight">
-              <span className="block text-white/40 text-2xl sm:text-3xl lg:text-4xl font-medium mb-1">
+            <h1
+              className="text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.9] tracking-tight"
+              style={{
+                textShadow: player.lightMode
+                  ? "0 2px 16px rgba(0,0,0,0.25), 0 1px 6px rgba(0,0,0,0.2)"
+                  : "0 2px 20px rgba(0,0,0,0.9), 0 1px 8px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.4)",
+              }}
+            >
+              <span
+                className="block text-white/40 text-2xl sm:text-3xl lg:text-4xl font-medium mb-1"
+                style={{
+                  textShadow: player.lightMode
+                    ? "0 1px 10px rgba(0,0,0,0.2)"
+                    : "0 1px 14px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.4)",
+                }}
+              >
                 {player.firstName}
               </span>
               {player.lastName}
@@ -95,7 +116,7 @@ export default function HeroSection({ player }: HeroSectionProps) {
 
             {/* Quick Info */}
             <motion.div
-              className="flex gap-4 mt-5 text-xs lg:text-sm text-white/40"
+              className="flex gap-4 mt-2 text-xs lg:text-sm text-white/40"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.5 }}

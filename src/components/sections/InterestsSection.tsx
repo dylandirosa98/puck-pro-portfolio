@@ -29,7 +29,7 @@ export default function InterestsSection({ player }: { player: Player }) {
         )}
         {media.length > 0 && (
           <div className={player.interests ? "mt-6" : ""}>
-            <MediaCarousel items={media} accentColor={player.themeColor} />
+            <MediaCarousel items={media} accentColor={player.themeColor} lightMode={player.lightMode} />
           </div>
         )}
       </motion.div>

@@ -64,9 +64,10 @@ function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: strin
 interface MediaCarouselProps {
   items: MediaItem[];
   accentColor: string;
+  lightMode?: boolean;
 }
 
-export default function MediaCarousel({ items, accentColor }: MediaCarouselProps) {
+export default function MediaCarousel({ items, accentColor, lightMode }: MediaCarouselProps) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef<number | null>(null);
@@ -138,7 +139,7 @@ export default function MediaCarousel({ items, accentColor }: MediaCarouselProps
                 style={{
                   width: i === index ? "20px" : "6px",
                   height: "6px",
-                  backgroundColor: i === index ? accentColor : "rgba(255,255,255,0.2)",
+                  backgroundColor: i === index ? accentColor : lightMode ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)",
                 }}
               />
             ))}

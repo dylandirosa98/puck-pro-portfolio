@@ -2,10 +2,12 @@
 
 import { motion } from "framer-motion";
 import { type ReactNode } from "react";
+import Image from "next/image";
 import { SocialLink } from "@/lib/types";
 
 interface SocialFooterProps {
   socialLinks: SocialLink[];
+  lightMode?: boolean;
 }
 
 const icons: Record<SocialLink["platform"], ReactNode> = {
@@ -36,7 +38,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
   ),
 };
 
-export default function SocialFooter({ socialLinks }: SocialFooterProps) {
+export default function SocialFooter({ socialLinks, lightMode }: SocialFooterProps) {
   return (
     <footer className="px-5 py-12 pb-20 lg:max-w-4xl lg:mx-auto lg:py-16 lg:pb-20">
       <motion.div
@@ -75,14 +77,24 @@ export default function SocialFooter({ socialLinks }: SocialFooterProps) {
           href="https://puckpromedia.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex flex-col items-center gap-2 opacity-40 hover:opacity-60 transition-opacity"
+          className="inline-flex flex-col items-center gap-2 opacity-50 hover:opacity-75 transition-opacity"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://static.wixstatic.com/media/3bd810_119617a64ff1464b966999b6c6859d4a~mv2.png/v1/fill/w_304,h_154,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ppm%20png_edited.png"
-            alt="Puck Pro Media"
-            className="h-7 w-auto"
-          />
+          {lightMode ? (
+            <Image
+              src="/icon.png"
+              alt="Puck Pro Media"
+              width={56}
+              height={56}
+              className="h-10 w-auto"
+            />
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src="https://static.wixstatic.com/media/3bd810_119617a64ff1464b966999b6c6859d4a~mv2.png/v1/fill/w_304,h_154,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ppm%20png_edited.png"
+              alt="Puck Pro Media"
+              className="h-7 w-auto"
+            />
+          )}
           <span className="text-[10px] text-white/30 tracking-wider">
             Made with Puck Pro Media
           </span>

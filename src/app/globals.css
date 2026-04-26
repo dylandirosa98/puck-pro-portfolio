@@ -38,3 +38,48 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ===== Light Mode ===== */
+.puck-light {
+  background-color: #f0f0f0 !important;
+  color: #111111 !important;
+}
+
+/* Text — mapped to absolute dark values for strong contrast on light bg */
+.puck-light .text-white        { color: #111111 !important; }
+.puck-light .text-white\/80    { color: #222222 !important; }
+.puck-light .text-white\/70    { color: #333333 !important; }
+.puck-light .text-white\/60    { color: #4a4a4a !important; }
+.puck-light .text-white\/50    { color: #444444 !important; }
+.puck-light .text-white\/40    { color: #3a3a3a !important; }
+.puck-light .text-white\/30    { color: #888888 !important; }
+.puck-light .text-white\/25    { color: #959595 !important; }
+.puck-light .text-white\/20    { color: #a5a5a5 !important; }
+.puck-light .text-white\/15    { color: #b8b8b8 !important; }
+.puck-light .text-white\/10    { color: #cccccc !important; }
+
+/* Backgrounds — white-alpha → subtle dark-alpha on light bg */
+.puck-light .bg-white\/5         { background-color: rgb(0 0 0 / 0.06)  !important; }
+.puck-light .bg-white\/10        { background-color: rgb(0 0 0 / 0.08)  !important; }
+.puck-light .bg-white\/15        { background-color: rgb(0 0 0 / 0.10)  !important; }
+.puck-light .bg-white\/20        { background-color: rgb(0 0 0 / 0.12)  !important; }
+.puck-light .bg-white\/90        { background-color: rgb(0 0 0 / 0.85)  !important; }
+.puck-light .bg-white\/\[0\.02\] { background-color: rgb(0 0 0 / 0.04)  !important; }
+.puck-light .bg-white\/\[0\.03\] { background-color: rgb(0 0 0 / 0.05)  !important; }
+
+/* Borders */
+.puck-light .border-white\/5    { border-color: rgb(0 0 0 / 0.10) !important; }
+.puck-light .border-white\/10   { border-color: rgb(0 0 0 / 0.13) !important; }
+.puck-light .border-white\/15   { border-color: rgb(0 0 0 / 0.16) !important; }
+.puck-light .border-white\/20   { border-color: rgb(0 0 0 / 0.20) !important; }
+
+/* Hover states */
+.puck-light .hover\:bg-white\/5:hover  { background-color: rgb(0 0 0 / 0.06) !important; }
+.puck-light .hover\:bg-white\/10:hover { background-color: rgb(0 0 0 / 0.08) !important; }
+.puck-light .hover\:bg-white\/15:hover { background-color: rgb(0 0 0 / 0.10) !important; }
+
+/* Hover text */
+.puck-light .hover\:text-white:hover   { color: #000000 !important; }
+
+/* Divider line in footer */
+.puck-light .bg-white\/10.mx-auto      { background-color: rgb(0 0 0 / 0.12) !important; }

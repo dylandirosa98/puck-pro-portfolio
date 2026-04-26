@@ -100,9 +100,10 @@ function VideoSlide({ highlight, active }: { highlight: Highlight; active: boole
 
 interface HighlightsSectionProps {
   highlights: Highlight[];
+  lightMode?: boolean;
 }
 
-export default function HighlightsSection({ highlights }: HighlightsSectionProps) {
+export default function HighlightsSection({ highlights, lightMode }: HighlightsSectionProps) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef<number | null>(null);
@@ -188,7 +189,7 @@ export default function HighlightsSection({ highlights }: HighlightsSectionProps
                   style={{
                     width: i === index ? "20px" : "6px",
                     height: "6px",
-                    backgroundColor: i === index ? "var(--accent)" : "rgba(255,255,255,0.2)",
+                    backgroundColor: i === index ? "var(--accent)" : lightMode ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)",
                   }}
                 />
               ))}

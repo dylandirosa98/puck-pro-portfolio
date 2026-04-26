@@ -118,6 +118,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [timeline, setTimeline] = useState<{ title: string; description: string; media: MediaItem[] }[]>(player?.timeline ?? []);
   const [transcriptUrl, setTranscriptUrl] = useState(player?.transcriptUrl ?? "");
   const [showStatsBar, setShowStatsBar] = useState(player?.showStatsBar ?? true);
+  const [lightMode, setLightMode] = useState(player?.lightMode ?? false);
   const [isPublished, setIsPublished] = useState(player?.isPublished ?? false);
 
   const [saving, setSaving] = useState(false);
@@ -168,6 +169,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     formData.set("timeline", JSON.stringify(timeline));
     formData.set("transcriptUrl", transcriptUrl);
     formData.set("showStatsBar", String(showStatsBar));
+    formData.set("lightMode", String(lightMode));
     formData.set("isPublished", String(isPublished));
 
     const result = isEdit
@@ -1068,6 +1070,27 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               </button>
               <span className="text-sm text-white/50">
                 {showStatsBar ? "Visible" : "Hidden"}
+              </span>
+            </label>
+          </div>
+          <div>
+            <label className={labelClass}>Light Mode</label>
+            <label className="flex items-center gap-3 mt-1 cursor-pointer">
+              <button
+                type="button"
+                onClick={() => setLightMode(!lightMode)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  lightMode ? "bg-yellow-400" : "bg-white/20"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    lightMode ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span className="text-sm text-white/50">
+                {lightMode ? "Light" : "Dark"}
               </span>
             </label>
           </div>

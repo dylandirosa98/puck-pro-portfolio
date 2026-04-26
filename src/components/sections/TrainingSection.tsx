@@ -45,7 +45,7 @@ function VideoSlide({ url, themeColor }: { url: string; themeColor: string }) {
   );
 }
 
-export default function TrainingSection({ player }: { player: Player }) {
+export default function TrainingSection({ player, lightMode }: { player: Player; lightMode?: boolean }) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef<number | null>(null);
@@ -118,7 +118,7 @@ export default function TrainingSection({ player }: { player: Player }) {
                 <div className="flex gap-1.5">
                   {videos.map((_, i) => (
                     <button key={i} onClick={() => go(i)} className="rounded-full transition-all duration-200"
-                      style={{ width: i === index ? "20px" : "6px", height: "6px", backgroundColor: i === index ? "var(--accent)" : "rgba(255,255,255,0.2)" }} />
+                      style={{ width: i === index ? "20px" : "6px", height: "6px", backgroundColor: i === index ? "var(--accent)" : lightMode ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)" }} />
                   ))}
                 </div>
                 <button onClick={next} disabled={index === videos.length - 1} className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors">
