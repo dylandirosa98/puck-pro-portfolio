@@ -119,6 +119,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [transcriptUrl, setTranscriptUrl] = useState(player?.transcriptUrl ?? "");
   const [showStatsBar, setShowStatsBar] = useState(player?.showStatsBar ?? true);
   const [lightMode, setLightMode] = useState(player?.lightMode ?? false);
+  const [customDomain, setCustomDomain] = useState(player?.customDomain ?? "");
   const [isPublished, setIsPublished] = useState(player?.isPublished ?? false);
 
   const [saving, setSaving] = useState(false);
@@ -170,6 +171,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     formData.set("transcriptUrl", transcriptUrl);
     formData.set("showStatsBar", String(showStatsBar));
     formData.set("lightMode", String(lightMode));
+    formData.set("customDomain", customDomain.trim().toLowerCase());
     formData.set("isPublished", String(isPublished));
 
     const result = isEdit
@@ -1017,6 +1019,16 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           Settings
         </legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label className={labelClass}>Custom Domain</label>
+            <input
+              className={inputClass}
+              value={customDomain}
+              onChange={(e) => setCustomDomain(e.target.value)}
+              placeholder="www.jacksmalley.com"
+            />
+            <p className="text-[10px] text-white/25 mt-1">Enter the domain, then add it in Vercel dashboard → Settings → Domains and point a CNAME to cname.vercel-dns.com</p>
+          </div>
           <div>
             <label className={labelClass}>Theme Color</label>
             <div className="flex items-center gap-3">

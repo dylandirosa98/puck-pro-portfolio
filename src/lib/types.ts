@@ -70,6 +70,7 @@ export interface Player {
   transcriptUrl?: string;
   showStatsBar?: boolean;
   lightMode?: boolean;
+  customDomain?: string;
   media?: MediaItem[];
 }
 
