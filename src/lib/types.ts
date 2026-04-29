@@ -71,6 +71,8 @@ export interface Player {
   showStatsBar?: boolean;
   lightMode?: boolean;
   customDomain?: string;
+  teamLogoUrl?: string;
+  numberColor?: string;
   media?: MediaItem[];
 }
 

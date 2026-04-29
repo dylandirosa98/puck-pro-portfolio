@@ -70,6 +70,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   // Images
   const [headshotUrl, setHeadshotUrl] = useState(player?.headshotUrl ?? "/images/headshot-placeholder.svg");
   const [heroImageUrl, setHeroImageUrl] = useState(player?.heroImageUrl ?? "/images/hero-placeholder.svg");
+  const [teamLogoUrl, setTeamLogoUrl] = useState(player?.teamLogoUrl ?? "");
 
   // Stats
   const [currentStats, setCurrentStats] = useState<PlayerStats>(player?.currentStats ?? { ...emptyStats });
@@ -89,6 +90,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
 
   // Settings
   const [themeColor, setThemeColor] = useState(player?.themeColor ?? "#b91c1c");
+  const [numberColor, setNumberColor] = useState(player?.numberColor ?? "");
   const [highlightReelUrl, setHighlightReelUrl] = useState(player?.highlightReelUrl ?? "");
   const [resumeUrl, setResumeUrl] = useState(player?.resumeUrl ?? "");
   const [skillsets, setSkillsets] = useState<{ name: string; description: string; watchUrl?: string }[]>(player?.skillsets ?? []);
@@ -153,12 +155,14 @@ export default function PlayerForm({ player }: PlayerFormProps) {
     formData.set("bio", bio);
     formData.set("headshotUrl", headshotUrl);
     formData.set("heroImageUrl", heroImageUrl);
+    formData.set("teamLogoUrl", teamLogoUrl);
     formData.set("currentStats", JSON.stringify(currentStats));
     formData.set("seasonHistory", JSON.stringify(seasonHistory));
     formData.set("highlights", JSON.stringify(highlights));
     formData.set("media", JSON.stringify(media));
     formData.set("socialLinks", JSON.stringify(socialLinks));
     formData.set("themeColor", themeColor);
+    formData.set("numberColor", numberColor);
     formData.set("highlightReelUrl", highlightReelUrl);
     formData.set("resumeUrl", resumeUrl);
     formData.set("skillsets", JSON.stringify(skillsets));
@@ -383,6 +387,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               folder="hero"
               currentUrl={heroImageUrl}
               onUpload={setHeroImageUrl}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Team Logo</label>
+            <ImageUpload
+              slug={slug}
+              folder="logo"
+              currentUrl={teamLogoUrl}
+              onUpload={setTeamLogoUrl}
             />
           </div>
         </div>
@@ -1044,6 +1057,26 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 onChange={(e) => setThemeColor(e.target.value)}
                 placeholder="#b91c1c"
               />
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>Number Color <span className="text-white/25 font-normal">(defaults to theme color)</span></label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={numberColor || themeColor}
+                onChange={(e) => setNumberColor(e.target.value)}
+                className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
+              />
+              <input
+                className={inputClass}
+                value={numberColor}
+                onChange={(e) => setNumberColor(e.target.value)}
+                placeholder="Same as theme color"
+              />
+              {numberColor && (
+                <button type="button" onClick={() => setNumberColor("")} className="text-xs text-white/30 hover:text-white/60 transition-colors">Reset</button>
+              )}
             </div>
           </div>
           <div>

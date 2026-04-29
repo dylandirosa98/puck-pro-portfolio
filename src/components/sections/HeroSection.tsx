@@ -84,13 +84,31 @@ export default function HeroSection({ player }: HeroSectionProps) {
             {/* Number */}
             <motion.span
               className="text-[8rem] lg:text-[12rem] leading-none font-black absolute -bottom-2 right-2 lg:right-7 select-none"
-              style={{ color: player.themeColor }}
+              style={{ color: player.numberColor || player.themeColor }}
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: player.lightMode ? 0.5 : 0.3, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
               {player.number}
             </motion.span>
+
+            {/* Team Logo — above name */}
+            {player.teamLogoUrl && (
+              <motion.div
+                className="relative w-24 h-24 lg:w-32 lg:h-32 mb-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <Image
+                  src={player.teamLogoUrl}
+                  alt="Team logo"
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </motion.div>
+            )}
 
             {/* Name */}
             <h1

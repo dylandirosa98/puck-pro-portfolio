@@ -6,7 +6,7 @@ import Image from "next/image";
 
 interface ImageUploadProps {
   slug: string;
-  folder: "headshot" | "hero";
+  folder: "headshot" | "hero" | "logo";
   currentUrl: string;
   onUpload: (url: string) => void;
 }
@@ -20,9 +20,9 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
   const bgRemovalRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
-  // Preload the default model when hero uploader mounts
+  // Preload the default model when hero/logo uploader mounts
   useEffect(() => {
-    if (folder !== "hero") return;
+    if (folder !== "hero" && folder !== "logo") return;
     import("@imgly/background-removal").then(({ preload }) =>
       preload({ proxyToWorker: true }).catch(() => {})
     );
@@ -84,7 +84,7 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
       },
     });
 
-    const path = `${slug || "temp"}/hero.png`;
+    const path = `${slug || "temp"}/${folder === "logo" ? "logo" : "hero"}.png`;
     await supabase.storage.from("player-images").remove([path]);
 
     const { error } = await supabase.storage
@@ -126,7 +126,7 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
     }
   }
 
-  if (folder === "hero") {
+  if (folder === "hero" || folder === "logo") {
     return (
       <div className="space-y-2">
         {/* Preview */}

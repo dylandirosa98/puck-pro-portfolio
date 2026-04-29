@@ -37,6 +37,8 @@ export interface PlayerRow {
   show_stats_bar: boolean;
   light_mode: boolean;
   custom_domain: string | null;
+  team_logo_url: string | null;
+  number_color: string | null;
   media: any;
   timeline: any;
   is_published: boolean;
@@ -85,6 +87,8 @@ export function rowToPlayer(row: PlayerRow): PlayerWithMeta {
     showStatsBar: row.show_stats_bar ?? true,
     lightMode: row.light_mode ?? false,
     customDomain: row.custom_domain ?? undefined,
+    teamLogoUrl: row.team_logo_url ?? undefined,
+    numberColor: row.number_color ?? undefined,
     media: row.media ?? [],
     isPublished: row.is_published,
     createdAt: row.created_at,
@@ -128,6 +132,8 @@ export function playerToRow(player: Partial<Player>): Record<string, unknown> {
   if (player.showStatsBar !== undefined) row.show_stats_bar = player.showStatsBar;
   if (player.lightMode !== undefined) row.light_mode = player.lightMode;
   if (player.customDomain !== undefined) row.custom_domain = player.customDomain || null;
+  if (player.teamLogoUrl !== undefined) row.team_logo_url = player.teamLogoUrl || null;
+  if (player.numberColor !== undefined) row.number_color = player.numberColor || null;
   if (player.media !== undefined) row.media = player.media;
   if (player.timeline !== undefined) row.timeline = player.timeline;
 
