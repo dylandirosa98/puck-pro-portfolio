@@ -69,6 +69,27 @@ function VideoSlide({ highlight, active }: { highlight: Highlight; active: boole
         />
       );
     }
+    if (video.platform === "gdrive-folder") {
+      return (
+        <a
+          href={highlight.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute inset-0 flex flex-col items-center justify-center bg-white/5 group px-6"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-white/10 group-hover:bg-white/15 flex items-center justify-center mb-4 transition-colors">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white/60">
+              <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/>
+            </svg>
+          </div>
+          <p className="text-sm font-semibold text-white/80 text-center mb-1">{highlight.title || "Game Film Folder"}</p>
+          <p className="text-xs text-white/40 text-center mb-4">Google Drive Folder</p>
+          <span className="px-4 py-2 rounded-full text-xs font-medium text-white transition-colors" style={{ backgroundColor: "var(--accent)" }}>
+            Open Folder →
+          </span>
+        </a>
+      );
+    }
     return (
       <a
         href={highlight.url}
