@@ -37,19 +37,35 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
     </svg>
   ),
   eliteprospects: (
-    /* eslint-disable-next-line @next/next/no-img-element */
-    <img
-      src="/elite-prospects-logo.svg"
-      alt="Elite Prospects"
-      className="w-7 h-7 lg:w-8 lg:h-8 object-contain brightness-0 invert opacity-50 group-hover:opacity-100 transition-opacity"
+    <span
+      aria-label="Elite Prospects"
+      className="w-7 h-5 bg-current"
+      style={{
+        WebkitMaskImage: "url(/elite-prospects-logo.svg)",
+        maskImage: "url(/elite-prospects-logo.svg)",
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+      }}
     />
   ),
   ncsa: (
-    /* eslint-disable-next-line @next/next/no-img-element */
-    <img
-      src="/ncsa-logo.svg"
-      alt="NCSA"
-      className="w-7 h-7 lg:w-8 lg:h-8 object-contain brightness-0 invert opacity-50 group-hover:opacity-100 transition-opacity"
+    <span
+      aria-label="NCSA"
+      className="w-7 h-5 bg-current"
+      style={{
+        WebkitMaskImage: "url(/ncsa-logo.svg)",
+        maskImage: "url(/ncsa-logo.svg)",
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+      }}
     />
   ),
 };
