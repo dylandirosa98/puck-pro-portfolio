@@ -39,7 +39,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
   eliteprospects: (
     <span
       aria-label="Elite Prospects"
-      className="w-7 h-5 bg-current"
+      className="w-10 h-7 lg:w-11 lg:h-8 bg-current"
       style={{
         WebkitMaskImage: "url(/elite-prospects-logo.svg)",
         maskImage: "url(/elite-prospects-logo.svg)",
@@ -55,7 +55,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
   ncsa: (
     <span
       aria-label="NCSA"
-      className="w-7 h-5 bg-current"
+      className="w-10 h-7 lg:w-11 lg:h-8 bg-current"
       style={{
         WebkitMaskImage: "url(/ncsa-logo.svg)",
         maskImage: "url(/ncsa-logo.svg)",
