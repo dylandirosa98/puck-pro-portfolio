@@ -44,6 +44,7 @@ const platformOptions: SocialLink["platform"][] = [
   "tiktok",
   "email",
   "eliteprospects",
+  "ncsa",
 ];
 
 export default function PlayerForm({ player }: PlayerFormProps) {
@@ -608,7 +609,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 >
                   {platformOptions.map((p) => (
                     <option key={p} value={p}>
-                      {p === "eliteprospects" ? "Elite Prospects" : p.charAt(0).toUpperCase() + p.slice(1)}
+                      {p === "eliteprospects" ? "Elite Prospects" : p === "ncsa" ? "NCSA" : p.charAt(0).toUpperCase() + p.slice(1)}
                     </option>
                   ))}
                 </select>

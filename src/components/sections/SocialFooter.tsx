@@ -37,19 +37,20 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
     </svg>
   ),
   eliteprospects: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-      <text
-        x="12"
-        y="17"
-        textAnchor="middle"
-        fontSize="13"
-        fontWeight="900"
-        fontFamily="Arial, Helvetica, sans-serif"
-        letterSpacing="-0.5"
-      >
-        EP
-      </text>
-    </svg>
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src="/elite-prospects-logo.svg"
+      alt="Elite Prospects"
+      className="w-7 h-7 lg:w-8 lg:h-8 object-contain"
+    />
+  ),
+  ncsa: (
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src="/ncsa-logo.svg"
+      alt="NCSA"
+      className="w-7 h-7 lg:w-8 lg:h-8 object-contain"
+    />
   ),
 };
 
