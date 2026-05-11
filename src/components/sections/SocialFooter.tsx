@@ -41,7 +41,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
     <img
       src="/elite-prospects-logo.svg"
       alt="Elite Prospects"
-      className="w-7 h-7 lg:w-8 lg:h-8 object-contain"
+      className="w-7 h-7 lg:w-8 lg:h-8 object-contain brightness-0 invert opacity-50 group-hover:opacity-100 transition-opacity"
     />
   ),
   ncsa: (
@@ -49,7 +49,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
     <img
       src="/ncsa-logo.svg"
       alt="NCSA"
-      className="w-7 h-7 lg:w-8 lg:h-8 object-contain"
+      className="w-7 h-7 lg:w-8 lg:h-8 object-contain brightness-0 invert opacity-50 group-hover:opacity-100 transition-opacity"
     />
   ),
 };
@@ -72,7 +72,7 @@ export default function SocialFooter({ socialLinks, lightMode }: SocialFooterPro
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+              className="group w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
