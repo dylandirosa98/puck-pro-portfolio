@@ -41,7 +41,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
     <img
       src="/elite-prospects-logo.svg"
       alt="Elite Prospects"
-      className="w-6 h-6 object-contain brightness-0 invert opacity-40 group-hover:opacity-100 transition-opacity"
+      className="w-7 h-7 lg:w-8 lg:h-8 object-contain brightness-0 invert opacity-50 group-hover:opacity-100 transition-opacity"
     />
   ),
   ncsa: (
@@ -49,7 +49,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
     <img
       src="/ncsa-logo.svg"
       alt="NCSA"
-      className="w-6 h-6 object-contain brightness-0 invert opacity-40 group-hover:opacity-100 transition-opacity"
+      className="w-7 h-7 lg:w-8 lg:h-8 object-contain brightness-0 invert opacity-50 group-hover:opacity-100 transition-opacity"
     />
   ),
 };
