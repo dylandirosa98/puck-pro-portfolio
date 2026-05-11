@@ -36,6 +36,21 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
       <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
     </svg>
   ),
+  eliteprospects: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+      <text
+        x="12"
+        y="17"
+        textAnchor="middle"
+        fontSize="13"
+        fontWeight="900"
+        fontFamily="Arial, Helvetica, sans-serif"
+        letterSpacing="-0.5"
+      >
+        EP
+      </text>
+    </svg>
+  ),
 };
 
 export default function SocialFooter({ socialLinks, lightMode }: SocialFooterProps) {
