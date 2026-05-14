@@ -147,7 +147,7 @@ export default function HeroSection({ player }: HeroSectionProps) {
 
           {/* CTA Buttons */}
           <motion.div
-            className="flex flex-wrap gap-2 lg:gap-3 mt-4"
+            className="grid grid-cols-2 gap-2 mt-4 lg:flex lg:flex-wrap lg:gap-3 [&>*]:justify-center [&>*]:w-full lg:[&>*]:w-auto [&>*:last-child:nth-child(odd)]:col-span-2 lg:[&>*:last-child:nth-child(odd)]:col-span-1"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
