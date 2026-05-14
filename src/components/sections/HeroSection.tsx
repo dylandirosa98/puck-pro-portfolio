@@ -220,7 +220,7 @@ export default function HeroSection({ player }: HeroSectionProps) {
                   >
                     <span
                       aria-hidden
-                      className="w-4 h-3 bg-current"
+                      className="w-7 h-5 lg:w-8 lg:h-6 bg-current"
                       style={{
                         WebkitMaskImage: `url(${isEP ? "/elite-prospects-logo.svg" : "/ncsa-logo.svg"})`,
                         maskImage: `url(${isEP ? "/elite-prospects-logo.svg" : "/ncsa-logo.svg"})`,
