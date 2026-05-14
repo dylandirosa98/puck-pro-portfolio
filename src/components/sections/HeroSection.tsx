@@ -201,6 +201,41 @@ export default function HeroSection({ player }: HeroSectionProps) {
                 Academics
               </a>
             )}
+            {player.socialLinks
+              ?.filter(
+                (l) =>
+                  l.showInHero &&
+                  l.url &&
+                  (l.platform === "eliteprospects" || l.platform === "ncsa")
+              )
+              .map((l) => {
+                const isEP = l.platform === "eliteprospects";
+                return (
+                  <a
+                    key={l.platform}
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium text-white/70 border border-white/15 hover:bg-white/5 transition-colors"
+                  >
+                    <span
+                      aria-hidden
+                      className="w-4 h-3 bg-current"
+                      style={{
+                        WebkitMaskImage: `url(${isEP ? "/elite-prospects-logo.svg" : "/ncsa-logo.svg"})`,
+                        maskImage: `url(${isEP ? "/elite-prospects-logo.svg" : "/ncsa-logo.svg"})`,
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                      }}
+                    />
+                    {isEP ? "Elite Prospects" : "NCSA"}
+                  </a>
+                );
+              })}
           </motion.div>
         </div>
       </section>

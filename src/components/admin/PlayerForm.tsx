@@ -627,6 +627,20 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                   placeholder={link.platform === "email" ? "mailto:player@example.com" : "https://..."}
                 />
               </div>
+              {(link.platform === "eliteprospects" || link.platform === "ncsa") && (
+                <label className="sm:col-span-2 flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!link.showInHero}
+                    onChange={(e) => {
+                      const updated = [...socialLinks];
+                      updated[i] = { ...updated[i], showInHero: e.target.checked };
+                      setSocialLinks(updated);
+                    }}
+                  />
+                  Show in hero next to Academics
+                </label>
+              )}
             </div>
             <button
               type="button"

@@ -22,6 +22,7 @@ export interface Highlight {
 export interface SocialLink {
   platform: "instagram" | "twitter" | "youtube" | "tiktok" | "email" | "eliteprospects" | "ncsa";
   url: string;
+  showInHero?: boolean;
 }
 
 export interface MediaItem {
