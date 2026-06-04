@@ -1,11 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { rowToPlayer, PlayerRow } from "@/lib/supabase/transforms";
 import PublishToggle from "@/components/admin/PublishToggle";
 import DeleteButton from "@/components/admin/DeleteButton";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: rows, error } = await supabase
     .from("players")
