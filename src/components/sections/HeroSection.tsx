@@ -261,7 +261,7 @@ export default function HeroSection({ player }: HeroSectionProps) {
                         width={32}
                         height={24}
                         aria-hidden
-                        className="h-5 w-7 object-contain brightness-0 invert opacity-70 lg:h-6 lg:w-8"
+                        className="h-5 w-7 object-contain lg:h-6 lg:w-8"
                       />
                     )}
                     {meta.label}
