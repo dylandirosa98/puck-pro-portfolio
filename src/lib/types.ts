@@ -20,7 +20,7 @@ export interface Highlight {
 }
 
 export interface SocialLink {
-  platform: "instagram" | "twitter" | "youtube" | "tiktok" | "email" | "eliteprospects" | "ncsa";
+  platform: "instagram" | "twitter" | "youtube" | "tiktok" | "email" | "eliteprospects" | "ncsa" | "hudl" | "neutralzone";
   url: string;
   showInHero?: boolean;
 }

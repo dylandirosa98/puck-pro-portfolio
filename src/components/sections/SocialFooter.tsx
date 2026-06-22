@@ -68,6 +68,24 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
       }}
     />
   ),
+  hudl: (
+    <Image
+      src="/hudl-logo.svg"
+      alt="HUDL"
+      width={44}
+      height={44}
+      className="h-8 w-8"
+    />
+  ),
+  neutralzone: (
+    <Image
+      src="/neutral-zone-logo.svg"
+      alt="Neutral Zone"
+      width={44}
+      height={44}
+      className="h-8 w-8"
+    />
+  ),
 };
 
 export default function SocialFooter({ socialLinks, lightMode }: SocialFooterProps) {
@@ -84,7 +102,7 @@ export default function SocialFooter({ socialLinks, lightMode }: SocialFooterPro
         <div className="flex justify-center gap-4 lg:gap-5 mb-8">
           {socialLinks.map((link, i) => (
             <motion.a
-              key={link.platform}
+              key={`${link.platform}-${i}`}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"

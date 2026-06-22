@@ -45,6 +45,27 @@ const platformOptions: SocialLink["platform"][] = [
   "email",
   "eliteprospects",
   "ncsa",
+  "hudl",
+  "neutralzone",
+];
+
+const platformLabels: Record<SocialLink["platform"], string> = {
+  instagram: "Instagram",
+  twitter: "Twitter",
+  youtube: "YouTube",
+  tiktok: "TikTok",
+  email: "Email",
+  eliteprospects: "Elite Prospects",
+  ncsa: "NCSA",
+  hudl: "HUDL",
+  neutralzone: "Neutral Zone",
+};
+
+const heroPlatformOptions: SocialLink["platform"][] = [
+  "eliteprospects",
+  "ncsa",
+  "hudl",
+  "neutralzone",
 ];
 
 export default function PlayerForm({ player }: PlayerFormProps) {
@@ -609,7 +630,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 >
                   {platformOptions.map((p) => (
                     <option key={p} value={p}>
-                      {p === "eliteprospects" ? "Elite Prospects" : p === "ncsa" ? "NCSA" : p.charAt(0).toUpperCase() + p.slice(1)}
+                      {platformLabels[p]}
                     </option>
                   ))}
                 </select>
@@ -627,7 +648,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                   placeholder={link.platform === "email" ? "mailto:player@example.com" : "https://..."}
                 />
               </div>
-              {(link.platform === "eliteprospects" || link.platform === "ncsa") && (
+              {heroPlatformOptions.includes(link.platform) && (
                 <label className="sm:col-span-2 flex items-center gap-2 text-xs text-white/60 cursor-pointer">
                   <input
                     type="checkbox"

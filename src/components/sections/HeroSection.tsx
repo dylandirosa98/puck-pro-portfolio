@@ -22,6 +22,29 @@ interface HeroSectionProps {
   player: Player;
 }
 
+const heroSocialMeta = {
+  eliteprospects: {
+    label: "Elite Prospects",
+    logo: "/elite-prospects-logo.svg",
+    mask: true,
+  },
+  ncsa: {
+    label: "NCSA",
+    logo: "/ncsa-logo.svg",
+    mask: true,
+  },
+  hudl: {
+    label: "HUDL",
+    logo: "/hudl-logo.svg",
+    mask: false,
+  },
+  neutralzone: {
+    label: "Neutral Zone",
+    logo: "/neutral-zone-logo.svg",
+    mask: false,
+  },
+} as const;
+
 export default function HeroSection({ player }: HeroSectionProps) {
   const [showReel, setShowReel] = useState(false);
   const [showResume, setShowResume] = useState(false);
@@ -206,10 +229,10 @@ export default function HeroSection({ player }: HeroSectionProps) {
                 (l) =>
                   l.showInHero &&
                   l.url &&
-                  (l.platform === "eliteprospects" || l.platform === "ncsa")
+                  l.platform in heroSocialMeta
               )
               .map((l) => {
-                const isEP = l.platform === "eliteprospects";
+                const meta = heroSocialMeta[l.platform as keyof typeof heroSocialMeta];
                 return (
                   <a
                     key={l.platform}
@@ -218,21 +241,32 @@ export default function HeroSection({ player }: HeroSectionProps) {
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium text-white/70 border border-white/15 hover:bg-white/5 transition-colors"
                   >
-                    <span
-                      aria-hidden
-                      className="w-7 h-5 lg:w-8 lg:h-6 bg-current"
-                      style={{
-                        WebkitMaskImage: `url(${isEP ? "/elite-prospects-logo.svg" : "/ncsa-logo.svg"})`,
-                        maskImage: `url(${isEP ? "/elite-prospects-logo.svg" : "/ncsa-logo.svg"})`,
-                        WebkitMaskSize: "contain",
-                        maskSize: "contain",
-                        WebkitMaskRepeat: "no-repeat",
-                        maskRepeat: "no-repeat",
-                        WebkitMaskPosition: "center",
-                        maskPosition: "center",
-                      }}
-                    />
-                    {isEP ? "Elite Prospects" : "NCSA"}
+                    {meta.mask ? (
+                      <span
+                        aria-hidden
+                        className="w-7 h-5 lg:w-8 lg:h-6 bg-current"
+                        style={{
+                          WebkitMaskImage: `url(${meta.logo})`,
+                          maskImage: `url(${meta.logo})`,
+                          WebkitMaskSize: "contain",
+                          maskSize: "contain",
+                          WebkitMaskRepeat: "no-repeat",
+                          maskRepeat: "no-repeat",
+                          WebkitMaskPosition: "center",
+                          maskPosition: "center",
+                        }}
+                      />
+                    ) : (
+                      <Image
+                        src={meta.logo}
+                        alt=""
+                        width={32}
+                        height={32}
+                        aria-hidden
+                        className="h-5 w-5 lg:h-6 lg:w-6 object-contain"
+                      />
+                    )}
+                    {meta.label}
                   </a>
                 );
               })}
