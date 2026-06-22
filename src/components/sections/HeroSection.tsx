@@ -45,6 +45,12 @@ const heroSocialMeta = {
   },
 } as const;
 
+type HeroSocialPlatform = keyof typeof heroSocialMeta;
+
+function isHeroSocialPlatform(platform: Player["socialLinks"][number]["platform"]): platform is HeroSocialPlatform {
+  return platform in heroSocialMeta;
+}
+
 export default function HeroSection({ player }: HeroSectionProps) {
   const [showReel, setShowReel] = useState(false);
   const [showResume, setShowResume] = useState(false);
@@ -225,22 +231,14 @@ export default function HeroSection({ player }: HeroSectionProps) {
               </a>
             )}
             {player.socialLinks
-              ?.filter(
-                (l) =>
-                  l.showInHero &&
-                  l.url &&
-                  l.platform in heroSocialMeta
-              )
-              .map((l) => {
-                const meta = heroSocialMeta[l.platform as keyof typeof heroSocialMeta];
-                return (
-                  <a
-                    key={l.platform}
-                    href={l.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium text-white/70 border border-white/15 hover:bg-white/5 transition-colors"
-                  >
+              ?.filter((l) => l.showInHero)
+              .map((l, i) => {
+                if (!isHeroSocialPlatform(l.platform)) return null;
+
+                const meta = heroSocialMeta[l.platform];
+                const className = "flex items-center gap-1.5 px-4 py-2 lg:px-5 lg:py-2.5 rounded-full text-xs lg:text-sm font-medium text-white/70 border border-white/15 hover:bg-white/5 transition-colors";
+                const content = (
+                  <>
                     {meta.mask ? (
                       <span
                         aria-hidden
@@ -261,12 +259,32 @@ export default function HeroSection({ player }: HeroSectionProps) {
                         src={meta.logo}
                         alt=""
                         width={32}
-                        height={32}
+                        height={24}
                         aria-hidden
-                        className="h-5 w-5 lg:h-6 lg:w-6 object-contain"
+                        className="h-5 w-7 object-contain lg:h-6 lg:w-8"
                       />
                     )}
                     {meta.label}
+                  </>
+                );
+
+                if (!l.url) {
+                  return (
+                    <span key={`${l.platform}-${i}`} className={`${className} pointer-events-none`}>
+                      {content}
+                    </span>
+                  );
+                }
+
+                return (
+                  <a
+                    key={`${l.platform}-${i}`}
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={className}
+                  >
+                    {content}
                   </a>
                 );
               })}

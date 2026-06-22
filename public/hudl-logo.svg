@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
   <title id="title">HUDL Logo</title>
-  <circle cx="256" cy="256" r="150" fill="#ff7300"/>
+  <circle cx="256" cy="256" r="220" fill="#ff7300"/>
   <g fill="#fff">
     <path d="M185 176c34-19 74-19 108 0 19 11 35 27 45 46-28-17-61-26-93-26-21 0-41 4-60 11-10 4-21 1-28-7-8-10-6-19 28-24z"/>
     <path d="M355 189c25 29 35 69 26 107-6 23-18 44-36 60 10-31 11-65 2-96-6-20-16-39-29-55-7-8-8-20-2-29 8-11 18-13 39 13z"/>

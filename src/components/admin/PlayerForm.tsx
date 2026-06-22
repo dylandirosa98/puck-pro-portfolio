@@ -620,7 +620,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               <div>
                 <label className={labelClass}>Platform</label>
                 <select
-                  className={inputClass}
+                  className={`${inputClass} bg-neutral-950`}
                   value={link.platform}
                   onChange={(e) => {
                     const updated = [...socialLinks];
@@ -629,7 +629,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                   }}
                 >
                   {platformOptions.map((p) => (
-                    <option key={p} value={p}>
+                    <option key={p} value={p} className="bg-neutral-950 text-white">
                       {platformLabels[p]}
                     </option>
                   ))}
