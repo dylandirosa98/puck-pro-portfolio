@@ -70,7 +70,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
   ),
   hudl: (
     <Image
-      src="/hudl-logo.svg"
+      src="/hudl-logo.png"
       alt="HUDL"
       width={44}
       height={44}
@@ -79,7 +79,7 @@ const icons: Record<SocialLink["platform"], ReactNode> = {
   ),
   neutralzone: (
     <Image
-      src="/neutral-zone-logo.svg"
+      src="/neutral-zone-logo.png"
       alt="Neutral Zone"
       width={44}
       height={44}
