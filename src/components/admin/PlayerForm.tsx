@@ -134,12 +134,17 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [interests, setInterests] = useState(player?.interests ?? "");
   const [interestsMedia, setInterestsMedia] = useState<MediaItem[]>(player?.interestsMedia ?? []);
-  const [trainingVideos, setTrainingVideos] = useState<{ url: string }[]>(() => {
-    if (player?.trainingVideos && player.trainingVideos.length > 0) return player.trainingVideos.map((v) => ({ url: v.url }));
-    if (player?.trainingVideoUrl) return [{ url: player.trainingVideoUrl }];
+  const [trainingVideos, setTrainingVideos] = useState<{ url: string; description?: string }[]>(() => {
+    if (player?.trainingVideos && player.trainingVideos.length > 0) {
+      return player.trainingVideos.map((v) => ({ url: v.url, description: v.description ?? "" }));
+    }
+    if (player?.trainingVideoUrl) return [{ url: player.trainingVideoUrl, description: "" }];
     return [];
   });
   const [trainingDescription, setTrainingDescription] = useState(player?.trainingDescription ?? "");
+  const [usePerTrainingDescriptions, setUsePerTrainingDescriptions] = useState(
+    () => !!player?.trainingVideos?.some((v) => v.description?.trim())
+  );
   const [timeline, setTimeline] = useState<{ title: string; description: string; media: MediaItem[] }[]>(player?.timeline ?? []);
   const [transcriptUrl, setTranscriptUrl] = useState(player?.transcriptUrl ?? "");
   const [showStatsBar, setShowStatsBar] = useState(player?.showStatsBar ?? true);
@@ -852,29 +857,54 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               <input
                 className={inputClass}
                 value={tv.url}
-                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { url: e.target.value } : t))}
+                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { ...t, url: e.target.value } : t))}
                 placeholder="YouTube, Vimeo, or Google Drive link"
               />
             </div>
+            {usePerTrainingDescriptions && (
+              <div>
+                <label className={labelClass}>Slide Description</label>
+                <textarea
+                  className={inputClass}
+                  rows={3}
+                  value={tv.description ?? ""}
+                  onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { ...t, description: e.target.value } : t))}
+                  placeholder="Description shown only when this training video is selected."
+                />
+              </div>
+            )}
           </div>
         ))}
         <button
           type="button"
-          onClick={() => setTrainingVideos([...trainingVideos, { url: "" }])}
+          onClick={() => setTrainingVideos([...trainingVideos, { url: "", description: "" }])}
           className="w-full py-2 rounded-lg border border-dashed border-white/20 text-xs text-white/40 hover:text-white/60 hover:border-white/30 transition-colors"
         >
           + Add Training Video
         </button>
-        <div>
-          <label className={labelClass}>Description</label>
-          <textarea
-            className={inputClass}
-            rows={3}
-            value={trainingDescription}
-            onChange={(e) => setTrainingDescription(e.target.value)}
-            placeholder="e.g. Regularly trains with Coach X, focusing on edge work and shot release."
+        <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={usePerTrainingDescriptions}
+            onChange={(e) => setUsePerTrainingDescriptions(e.target.checked)}
           />
-        </div>
+          Use a different description for each training video
+        </label>
+        {!usePerTrainingDescriptions && (
+          <div>
+            <label className={labelClass}>Description</label>
+            <textarea
+              className={inputClass}
+              rows={3}
+              value={trainingDescription}
+              onChange={(e) => setTrainingDescription(e.target.value)}
+              placeholder="e.g. Regularly trains with Coach X, focusing on edge work and shot release."
+            />
+          </div>
+        )}
+        {usePerTrainingDescriptions && trainingDescription && (
+          <p className="text-[10px] text-white/25">The shared description is saved and will be used as a fallback if a slide description is blank.</p>
+        )}
         <p className="text-[10px] text-white/20">Videos carousel shown first, description below. Leave both empty to hide.</p>
       </fieldset>
 

@@ -78,7 +78,12 @@ export function rowToPlayer(row: PlayerRow): PlayerWithMeta {
     trainingVideoUrl: row.training_video_url ?? undefined,
     trainingDescription: row.training_description ?? undefined,
     trainingVideos: (() => {
-      if (row.training_videos && row.training_videos.length > 0) return row.training_videos.map((v: { url: string }) => ({ url: v.url }));
+      if (row.training_videos && row.training_videos.length > 0) {
+        return row.training_videos.map((v: { url: string; description?: string }) => ({
+          url: v.url,
+          description: v.description ?? "",
+        }));
+      }
       if (row.training_video_url) return [{ url: row.training_video_url }];
       return [];
     })(),

@@ -77,9 +77,10 @@ export default function TrainingSection({ player, lightMode }: { player: Player;
   const touchStartX = useRef<number | null>(null);
 
   const videos = (player.trainingVideos ?? []).filter((v) => v.url?.trim());
-  const description = player.trainingDescription ?? "";
+  const sharedDescription = player.trainingDescription ?? "";
+  const activeDescription = videos[index]?.description?.trim() || sharedDescription;
 
-  if (videos.length === 0 && !description) return null;
+  if (videos.length === 0 && !activeDescription) return null;
 
   function go(next: number) {
     setDirection(next > index ? 1 : -1);
@@ -155,10 +156,19 @@ export default function TrainingSection({ player, lightMode }: { player: Player;
           </>
         )}
 
-        {description && (
-          <p className={`text-white/70 text-sm lg:text-base leading-relaxed ${videos.length > 0 ? "mt-6" : ""}`}>
-            {description}
-          </p>
+        {activeDescription && (
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.p
+              key={`${index}-${activeDescription}`}
+              className={`text-white/70 text-sm lg:text-base leading-relaxed ${videos.length > 0 ? "mt-6" : ""}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeDescription}
+            </motion.p>
+          </AnimatePresence>
         )}
       </motion.div>
     </section>
