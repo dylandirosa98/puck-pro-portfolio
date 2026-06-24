@@ -78,9 +78,10 @@ export default function TrainingSection({ player, lightMode }: { player: Player;
 
   const videos = (player.trainingVideos ?? []).filter((v) => v.url?.trim());
   const sharedDescription = player.trainingDescription ?? "";
+  const activeTitle = videos[index]?.title?.trim() ?? "";
   const activeDescription = videos[index]?.description?.trim() || sharedDescription;
 
-  if (videos.length === 0 && !activeDescription) return null;
+  if (videos.length === 0 && !activeTitle && !activeDescription) return null;
 
   function go(next: number) {
     setDirection(next > index ? 1 : -1);
@@ -156,18 +157,23 @@ export default function TrainingSection({ player, lightMode }: { player: Player;
           </>
         )}
 
-        {activeDescription && (
+        {(activeTitle || activeDescription) && (
           <AnimatePresence mode="wait" initial={false}>
-            <motion.p
-              key={`${index}-${activeDescription}`}
-              className={`text-white/70 text-sm lg:text-base leading-relaxed ${videos.length > 0 ? "mt-6" : ""}`}
+            <motion.div
+              key={`${index}-${activeTitle}-${activeDescription}`}
+              className={videos.length > 0 ? "mt-6" : ""}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
             >
-              {activeDescription}
-            </motion.p>
+              {activeTitle && (
+                <h3 className="text-white/90 text-base lg:text-lg font-semibold mb-2">{activeTitle}</h3>
+              )}
+              {activeDescription && (
+                <p className="text-white/70 text-sm lg:text-base leading-relaxed">{activeDescription}</p>
+              )}
+            </motion.div>
           </AnimatePresence>
         )}
       </motion.div>

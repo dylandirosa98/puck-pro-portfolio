@@ -79,8 +79,9 @@ export function rowToPlayer(row: PlayerRow): PlayerWithMeta {
     trainingDescription: row.training_description ?? undefined,
     trainingVideos: (() => {
       if (row.training_videos && row.training_videos.length > 0) {
-        return row.training_videos.map((v: { url: string; description?: string }) => ({
+        return row.training_videos.map((v: { url: string; title?: string; description?: string }) => ({
           url: v.url,
+          title: v.title ?? "",
           description: v.description ?? "",
         }));
       }

@@ -134,11 +134,11 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [interests, setInterests] = useState(player?.interests ?? "");
   const [interestsMedia, setInterestsMedia] = useState<MediaItem[]>(player?.interestsMedia ?? []);
-  const [trainingVideos, setTrainingVideos] = useState<{ url: string; description?: string }[]>(() => {
+  const [trainingVideos, setTrainingVideos] = useState<{ url: string; title?: string; description?: string }[]>(() => {
     if (player?.trainingVideos && player.trainingVideos.length > 0) {
-      return player.trainingVideos.map((v) => ({ url: v.url, description: v.description ?? "" }));
+      return player.trainingVideos.map((v) => ({ url: v.url, title: v.title ?? "", description: v.description ?? "" }));
     }
-    if (player?.trainingVideoUrl) return [{ url: player.trainingVideoUrl, description: "" }];
+    if (player?.trainingVideoUrl) return [{ url: player.trainingVideoUrl, title: "", description: "" }];
     return [];
   });
   const [trainingDescription, setTrainingDescription] = useState(player?.trainingDescription ?? "");
@@ -861,6 +861,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 placeholder="YouTube, Vimeo, or Google Drive link"
               />
             </div>
+            <div>
+              <label className={labelClass}>Slide Title <span className="text-white/20 font-normal">(optional)</span></label>
+              <input
+                className={inputClass}
+                value={tv.title ?? ""}
+                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { ...t, title: e.target.value } : t))}
+                placeholder="e.g. Edge Work Session"
+              />
+            </div>
             {usePerTrainingDescriptions && (
               <div>
                 <label className={labelClass}>Slide Description</label>
@@ -877,7 +886,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         ))}
         <button
           type="button"
-          onClick={() => setTrainingVideos([...trainingVideos, { url: "", description: "" }])}
+          onClick={() => setTrainingVideos([...trainingVideos, { url: "", title: "", description: "" }])}
           className="w-full py-2 rounded-lg border border-dashed border-white/20 text-xs text-white/40 hover:text-white/60 hover:border-white/30 transition-colors"
         >
           + Add Training Video

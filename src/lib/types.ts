@@ -66,7 +66,7 @@ export interface Player {
   interestsMedia?: MediaItem[];
   trainingVideoUrl?: string;
   trainingDescription?: string;
-  trainingVideos?: { url: string; description?: string }[];
+  trainingVideos?: { url: string; title?: string; description?: string }[];
   timeline?: TimelineEntry[];
   transcriptUrl?: string;
   showStatsBar?: boolean;
