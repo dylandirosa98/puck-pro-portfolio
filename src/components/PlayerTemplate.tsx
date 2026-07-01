@@ -55,7 +55,7 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
 
   const infoItems = [
     { label: "Position", value: player.position },
-    { label: "Shoots", value: player.shoots },
+    { label: player.position === "Goalie" ? "Catches" : "Shoots", value: player.shoots },
     { label: "Height", value: player.height },
     { label: "Weight", value: player.weight },
   ].filter((item) => item.value);

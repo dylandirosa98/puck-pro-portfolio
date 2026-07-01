@@ -221,6 +221,8 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   }
 
   const inputClass = "w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-white/30 transition-colors";
+  const selectClass = `${inputClass} bg-neutral-950`;
+  const optionClass = "bg-neutral-950 text-white";
   const labelClass = "block text-xs font-medium text-white/50 mb-1.5";
   const sectionClass = "space-y-4 p-5 bg-white/[0.02] rounded-xl border border-white/5";
 
@@ -242,10 +244,10 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           </div>
           <div>
             <label className={labelClass}>Position</label>
-            <select className={inputClass} value={position} onChange={(e) => setPosition(e.target.value)}>
-              <option value="Forward">Forward</option>
-              <option value="Defense">Defense</option>
-              <option value="Goalie">Goalie</option>
+            <select className={selectClass} value={position} onChange={(e) => setPosition(e.target.value)}>
+              <option className={optionClass} value="Forward">Forward</option>
+              <option className={optionClass} value="Defense">Defense</option>
+              <option className={optionClass} value="Goalie">Goalie</option>
             </select>
           </div>
           <div>
@@ -273,10 +275,10 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             <input className={inputClass} value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="170 lbs" />
           </div>
           <div>
-            <label className={labelClass}>Shoots</label>
-            <select className={inputClass} value={shoots} onChange={(e) => setShoots(e.target.value as "Left" | "Right")}>
-              <option value="Left">Left</option>
-              <option value="Right">Right</option>
+            <label className={labelClass}>{position === "Goalie" ? "Catches" : "Shoots"}</label>
+            <select className={selectClass} value={shoots} onChange={(e) => setShoots(e.target.value as "Left" | "Right")}>
+              <option className={optionClass} value="Left">Left</option>
+              <option className={optionClass} value="Right">Right</option>
             </select>
           </div>
           <div>
@@ -311,12 +313,12 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               <div>
                 <label className={labelClass}>Type</label>
                 <select
-                  className={inputClass}
+                  className={selectClass}
                   value={item.type}
                   onChange={(e) => setMedia(media.map((m, j) => j === i ? { ...m, type: e.target.value as "photo" | "video" } : m))}
                 >
-                  <option value="photo">Photo</option>
-                  <option value="video">Video</option>
+                  <option className={optionClass} value="photo">Photo</option>
+                  <option className={optionClass} value="video">Video</option>
                 </select>
               </div>
               <div>
@@ -625,7 +627,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               <div>
                 <label className={labelClass}>Platform</label>
                 <select
-                  className={`${inputClass} bg-neutral-950`}
+                  className={selectClass}
                   value={link.platform}
                   onChange={(e) => {
                     const updated = [...socialLinks];
@@ -634,7 +636,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                   }}
                 >
                   {platformOptions.map((p) => (
-                    <option key={p} value={p} className="bg-neutral-950 text-white">
+                    <option key={p} value={p} className={optionClass}>
                       {platformLabels[p]}
                     </option>
                   ))}
@@ -784,12 +786,12 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               <div>
                 <label className={labelClass}>Type</label>
                 <select
-                  className={inputClass}
+                  className={selectClass}
                   value={item.type}
                   onChange={(e) => setInterestsMedia(interestsMedia.map((m, j) => j === i ? { ...m, type: e.target.value as "photo" | "video" } : m))}
                 >
-                  <option value="photo">Photo</option>
-                  <option value="video">Video</option>
+                  <option className={optionClass} value="photo">Photo</option>
+                  <option className={optionClass} value="video">Video</option>
                 </select>
               </div>
               <div>
@@ -978,12 +980,12 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                   <div>
                     <label className={labelClass}>Type</label>
                     <select
-                      className={inputClass}
+                      className={selectClass}
                       value={item.type}
                       onChange={(e) => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.map((m, k) => k === mi ? { ...m, type: e.target.value as "photo" | "video" } : m) } : t))}
                     >
-                      <option value="photo">Photo</option>
-                      <option value="video">Video</option>
+                      <option className={optionClass} value="photo">Photo</option>
+                      <option className={optionClass} value="video">Video</option>
                     </select>
                   </div>
                   <div>
