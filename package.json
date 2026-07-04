@@ -11,6 +11,9 @@
     "create-admin": "node --env-file=.env.local scripts/create-admin.mjs"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@imgly/background-removal": "^1.7.0",
     "@mux/mux-player-react": "^3.13.0",
     "@supabase/ssr": "^0.8.0",

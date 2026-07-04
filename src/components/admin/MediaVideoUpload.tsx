@@ -13,6 +13,11 @@ interface MediaVideoUploadProps {
   onChange: (item: MediaItem) => void;
 }
 
+type FFmpegInstance = import("@ffmpeg/ffmpeg").FFmpeg;
+
+let ffmpeg: FFmpegInstance | null = null;
+let ffmpegLoaded = false;
+
 type UploadStatusResponse = {
   uploadStatus?: string;
   assetId?: string | null;
@@ -22,6 +27,73 @@ type UploadStatusResponse = {
   thumbnailUrl?: string | null;
   error?: string;
 };
+
+
+async function loadFfmpeg() {
+  if (ffmpegLoaded && ffmpeg) return ffmpeg;
+
+  const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+  ffmpeg = new FFmpeg();
+  await ffmpeg.load({
+    coreURL: "/ffmpeg/ffmpeg-core.js",
+    wasmURL: "/ffmpeg/ffmpeg-core.wasm",
+  });
+  ffmpegLoaded = true;
+  return ffmpeg;
+}
+
+function getVideoExtension(file: File) {
+  const nameExt = file.name.split(".").pop()?.toLowerCase();
+  if (nameExt && /^[a-z0-9]+$/.test(nameExt)) return nameExt;
+  if (file.type.includes("webm")) return "webm";
+  if (file.type.includes("quicktime")) return "mov";
+  return "mp4";
+}
+
+function getOutputMimeType(ext: string) {
+  if (ext === "webm") return "video/webm";
+  if (ext === "mov") return "video/quicktime";
+  return "video/mp4";
+}
+
+async function removeAudioTrack(file: File, onProgress: (progress: number) => void): Promise<File> {
+  const ffmpeg = await loadFfmpeg();
+  const { fetchFile } = await import("@ffmpeg/util");
+
+  const ext = getVideoExtension(file);
+  const inputName = `input.${ext}`;
+  const outputName = `muted-${Date.now()}.${ext}`;
+
+  onProgress(0);
+  const handleProgress = ({ progress }: { progress: number }) => {
+    if (Number.isFinite(progress)) {
+      onProgress(Math.max(0, Math.min(100, Math.round(progress * 100))));
+    }
+  };
+
+  ffmpeg.on("progress", handleProgress);
+
+  try {
+    await ffmpeg.writeFile(inputName, await fetchFile(file));
+    const exitCode = await ffmpeg.exec(["-i", inputName, "-map", "0:v:0", "-c:v", "copy", "-an", outputName]);
+
+    if (exitCode !== 0) {
+      throw new Error("Could not remove audio from this video");
+    }
+
+    const data = await ffmpeg.readFile(outputName);
+    const bytes = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
+    const buffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(buffer).set(bytes);
+    const mutedBlob = new Blob([buffer], { type: getOutputMimeType(ext) });
+    const mutedName = file.name.replace(/(\.[^.]+)?$/, `-muted.${ext}`);
+    return new File([mutedBlob], mutedName, { type: mutedBlob.type });
+  } finally {
+    ffmpeg.off("progress", handleProgress);
+    await ffmpeg.deleteFile(inputName).catch(() => undefined);
+    await ffmpeg.deleteFile(outputName).catch(() => undefined);
+  }
+}
 
 function uploadToMux(uploadUrl: string, file: File, onProgress: (progress: number) => void) {
   return new Promise<void>((resolve, reject) => {
@@ -70,15 +142,29 @@ export default function MediaVideoUpload({ item, slug, inputClass, labelClass, o
   const thumbnailUrl = item.thumbnailUrl || (playbackId ? getMuxThumbnailUrl(playbackId) : "");
 
   async function handleFile(file: File) {
+    const includeAudio = window.confirm(
+      "Include audio in this Mux upload?\n\nOK = keep original audio\nCancel = permanently remove audio before upload"
+    );
+
     setUploading(true);
     setProgress(0);
-    setStatus("Creating upload...");
+    setStatus("Preparing video...");
 
     try {
+      let uploadFile = file;
+
+      if (!includeAudio) {
+        setStatus("Removing audio...");
+        uploadFile = await removeAudioTrack(file, setProgress);
+      }
+
+      setProgress(0);
+      setStatus("Creating upload...");
+
       const response = await fetch("/api/mux/uploads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: item.title || file.name, slug }),
+        body: JSON.stringify({ title: item.title || uploadFile.name, slug }),
       });
       const upload = await response.json();
 
@@ -88,7 +174,7 @@ export default function MediaVideoUpload({ item, slug, inputClass, labelClass, o
 
       onChange({ ...item, muxUploadId: upload.uploadId });
       setStatus("Uploading to Mux...");
-      await uploadToMux(upload.uploadUrl, file, setProgress);
+      await uploadToMux(upload.uploadUrl, uploadFile, setProgress);
 
       setStatus("Processing video...");
       const ready = await waitForMuxPlayback(upload.uploadId);
@@ -155,7 +241,7 @@ export default function MediaVideoUpload({ item, slug, inputClass, labelClass, o
           }}
           className="hidden"
         />
-        <p className="mt-1 text-[10px] text-white/25">Uploads are processed by Mux for reliable playback and thumbnails.</p>
+        <p className="mt-1 text-[10px] text-white/25">After choosing a file, you can keep or permanently remove audio before it uploads to Mux.</p>
       </div>
 
       <div>
