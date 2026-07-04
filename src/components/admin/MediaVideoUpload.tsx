@@ -13,10 +13,25 @@ interface MediaVideoUploadProps {
   onChange: (item: MediaItem) => void;
 }
 
-type FFmpegInstance = import("@ffmpeg/ffmpeg").FFmpeg;
+type FFmpegInstance = {
+  load: (config: { coreURL: string; wasmURL: string }) => Promise<unknown>;
+  on: (event: "progress", callback: (event: { progress: number }) => void) => void;
+  off: (event: "progress", callback: (event: { progress: number }) => void) => void;
+  writeFile: (path: string, data: Uint8Array) => Promise<unknown>;
+  exec: (args: string[]) => Promise<number>;
+  readFile: (path: string) => Promise<Uint8Array | string>;
+  deleteFile: (path: string) => Promise<unknown>;
+};
+
+type FFmpegWindow = Window & {
+  FFmpegWASM?: {
+    FFmpeg: new () => FFmpegInstance;
+  };
+};
 
 let ffmpeg: FFmpegInstance | null = null;
 let ffmpegLoaded = false;
+let ffmpegScriptPromise: Promise<void> | null = null;
 
 type UploadStatusResponse = {
   uploadStatus?: string;
@@ -29,10 +44,44 @@ type UploadStatusResponse = {
 };
 
 
+async function loadFfmpegScript() {
+  const browserWindow = window as FFmpegWindow;
+  if (browserWindow.FFmpegWASM) return;
+
+  ffmpegScriptPromise ??= new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>('script[src="/ffmpeg/ffmpeg.js"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Could not load FFmpeg")), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "/ffmpeg/ffmpeg.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Could not load FFmpeg"));
+    document.head.appendChild(script);
+  });
+
+  await ffmpegScriptPromise;
+
+  if (!browserWindow.FFmpegWASM) {
+    throw new Error("FFmpeg did not initialize");
+  }
+}
+
 async function loadFfmpeg() {
   if (ffmpegLoaded && ffmpeg) return ffmpeg;
 
-  const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+  await loadFfmpegScript();
+  const browserWindow = window as FFmpegWindow;
+  const FFmpeg = browserWindow.FFmpegWASM?.FFmpeg;
+
+  if (!FFmpeg) {
+    throw new Error("FFmpeg is unavailable in this browser");
+  }
+
   ffmpeg = new FFmpeg();
   await ffmpeg.load({
     coreURL: "/ffmpeg/ffmpeg-core.js",
@@ -62,7 +111,6 @@ function setProgressSafe(onProgress: (progress: number) => void, progress: numbe
 
 async function removeAudioTrack(file: File, onProgress: (progress: number) => void): Promise<File> {
   const ffmpeg = await loadFfmpeg();
-  const { fetchFile } = await import("@ffmpeg/util");
 
   const ext = getVideoExtension(file);
   const inputName = `input.${ext}`;
@@ -78,7 +126,7 @@ async function removeAudioTrack(file: File, onProgress: (progress: number) => vo
   ffmpeg.on("progress", handleProgress);
 
   try {
-    await ffmpeg.writeFile(inputName, await fetchFile(file));
+    await ffmpeg.writeFile(inputName, new Uint8Array(await file.arrayBuffer()));
 
     let exitCode = await ffmpeg.exec([
       "-y",
