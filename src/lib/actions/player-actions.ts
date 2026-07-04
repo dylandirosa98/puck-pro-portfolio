@@ -179,7 +179,7 @@ export async function deletePlayer(id: string) {
   // Get the player's slug first for storage cleanup
   const { data: player } = await supabase
     .from("players")
-    .select("slug, media, interests_media, training_videos, timeline")
+    .select("slug, highlights, media, interests_media, training_videos, timeline")
     .eq("id", id)
     .single();
 

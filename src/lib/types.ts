@@ -17,6 +17,10 @@ export interface SeasonStats {
 export interface Highlight {
   title: string;
   url: string;
+  thumbnailUrl?: string;
+  muxPlaybackId?: string;
+  muxAssetId?: string;
+  muxUploadId?: string;
 }
 
 export interface SocialLink {

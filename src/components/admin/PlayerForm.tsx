@@ -569,41 +569,55 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           Highlights
         </legend>
         {highlights.map((hl, i) => (
-          <div key={i} className="flex gap-3 items-start">
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className={labelClass}>Title</label>
-                <input
-                  className={inputClass}
-                  value={hl.title}
-                  onChange={(e) => {
-                    const updated = [...highlights];
-                    updated[i] = { ...updated[i], title: e.target.value };
-                    setHighlights(updated);
-                  }}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>URL</label>
-                <input
-                  className={inputClass}
-                  value={hl.url}
-                  onChange={(e) => {
-                    const updated = [...highlights];
-                    updated[i] = { ...updated[i], url: e.target.value };
-                    setHighlights(updated);
-                  }}
-                  placeholder="https://youtube.com/watch?v=..."
-                />
-              </div>
+          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs text-white/40">Highlight {i + 1}</span>
+              <button
+                type="button"
+                onClick={() => setHighlights((prev) => prev.filter((_, j) => j !== i))}
+                className="text-xs text-red-400/60 hover:text-red-400"
+              >
+                Remove
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setHighlights((prev) => prev.filter((_, j) => j !== i))}
-              className="text-xs text-white/30 hover:text-red-400 mt-6"
-            >
-              Remove
-            </button>
+            <div>
+              <label className={labelClass}>Title</label>
+              <input
+                className={inputClass}
+                value={hl.title}
+                onChange={(e) => {
+                  const updated = [...highlights];
+                  updated[i] = { ...updated[i], title: e.target.value };
+                  setHighlights(updated);
+                }}
+              />
+            </div>
+            <MediaVideoUpload
+              item={{
+                type: "video",
+                url: hl.url,
+                title: hl.title,
+                thumbnailUrl: hl.thumbnailUrl,
+                muxPlaybackId: hl.muxPlaybackId,
+                muxAssetId: hl.muxAssetId,
+                muxUploadId: hl.muxUploadId,
+              }}
+              slug={slug}
+              inputClass={inputClass}
+              labelClass={labelClass}
+              onChange={(next) => {
+                const updated = [...highlights];
+                updated[i] = {
+                  ...updated[i],
+                  url: next.url,
+                  thumbnailUrl: next.thumbnailUrl,
+                  muxPlaybackId: next.muxPlaybackId,
+                  muxAssetId: next.muxAssetId,
+                  muxUploadId: next.muxUploadId,
+                };
+                setHighlights(updated);
+              }}
+            />
           </div>
         ))}
         <button

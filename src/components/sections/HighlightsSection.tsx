@@ -10,7 +10,7 @@ import { detectVideo, getMuxPlaybackId, getMuxThumbnailUrl } from "@/lib/video";
 function VideoSlide({ highlight, active }: { highlight: Highlight; active: boolean }) {
   const [playing, setPlaying] = useState(false);
   const video = detectVideo(highlight.url);
-  const muxPlaybackId = getMuxPlaybackId(highlight.url);
+  const muxPlaybackId = getMuxPlaybackId(highlight.url, highlight.muxPlaybackId);
 
   // Reset playing state when slide becomes inactive
   if (!active && playing) setPlaying(false);
@@ -59,7 +59,7 @@ function VideoSlide({ highlight, active }: { highlight: Highlight; active: boole
             className="absolute inset-0 w-full h-full group cursor-pointer"
           >
             <Image
-              src={getMuxThumbnailUrl(muxPlaybackId)}
+              src={highlight.thumbnailUrl || getMuxThumbnailUrl(muxPlaybackId)}
               alt={highlight.title}
               fill
               className="object-cover"
