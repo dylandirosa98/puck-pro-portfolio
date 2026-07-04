@@ -4,19 +4,22 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Player } from "@/lib/types";
 import VideoModal from "@/components/VideoModal";
-import { detectVideo, getEmbedUrl } from "@/lib/video";
+import Image from "next/image";
+import { detectVideo, getEmbedUrl, getMuxPlaybackId, getMuxThumbnailUrl } from "@/lib/video";
 
-function VideoSlide({ url, themeColor }: { url: string; themeColor: string }) {
+function VideoSlide({ videoItem, themeColor }: { videoItem: { url: string; title?: string; thumbnailUrl?: string; muxPlaybackId?: string }; themeColor: string }) {
   const [showModal, setShowModal] = useState(false);
-  const video = detectVideo(url);
+  const video = detectVideo(videoItem.url);
   const embedUrl = getEmbedUrl(video);
+  const muxPlaybackId = getMuxPlaybackId(videoItem.url, videoItem.muxPlaybackId);
+  const muxThumbnail = videoItem.thumbnailUrl || (muxPlaybackId ? getMuxThumbnailUrl(muxPlaybackId) : "");
 
   // Drive folder — show a styled card instead of a broken embed
   if (video.platform === "gdrive-folder") {
     return (
       <div className="w-full">
         <a
-          href={url}
+          href={videoItem.url}
           target="_blank"
           rel="noopener noreferrer"
           className="relative w-full aspect-video rounded-xl overflow-hidden bg-white/5 flex flex-col items-center justify-center group px-6"
@@ -43,7 +46,15 @@ function VideoSlide({ url, themeColor }: { url: string; themeColor: string }) {
         className="relative w-full aspect-video rounded-xl overflow-hidden bg-white/5 cursor-pointer group"
         onClick={() => setShowModal(true)}
       >
-        {embedUrl ? (
+        {muxThumbnail ? (
+          <Image
+            src={muxThumbnail}
+            alt="Training video"
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        ) : embedUrl ? (
           <iframe
             src={embedUrl.replace("autoplay=1", "autoplay=0")}
             className="absolute inset-0 w-full h-full pointer-events-none"
@@ -66,7 +77,7 @@ function VideoSlide({ url, themeColor }: { url: string; themeColor: string }) {
           </div>
         </div>
       </div>
-      <VideoModal url={url} isOpen={showModal} onClose={() => setShowModal(false)} />
+      <VideoModal url={videoItem.url} playbackId={videoItem.muxPlaybackId} title={videoItem.title} isOpen={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
 }
@@ -133,7 +144,7 @@ export default function TrainingSection({ player, lightMode }: { player: Player;
                   exit="exit"
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
-                  <VideoSlide url={videos[index].url} themeColor={player.themeColor} />
+                  <VideoSlide videoItem={videos[index]} themeColor={player.themeColor} />
                 </motion.div>
               </AnimatePresence>
             </div>

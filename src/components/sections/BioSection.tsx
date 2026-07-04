@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Player } from "@/lib/types";
 import MediaCarousel from "./MediaCarousel";
+import { hasMediaSource } from "@/lib/video";
 
 interface BioSectionProps {
   player: Player;
 }
 
 export default function BioSection({ player }: BioSectionProps) {
-  const media = (player.media ?? []).filter((m) => m.url?.trim());
+  const media = (player.media ?? []).filter(hasMediaSource);
 
   return (
     <section className="px-5 py-12 lg:max-w-4xl lg:mx-auto lg:py-16">

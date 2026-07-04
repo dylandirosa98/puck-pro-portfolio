@@ -2,22 +2,26 @@
 
 import { useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { detectVideo, getEmbedUrl, type VideoInfo } from "@/lib/video";
+import MuxPlayer from "@mux/mux-player-react";
+import { detectVideo, getEmbedUrl, getMuxPlaybackId, type VideoInfo } from "@/lib/video";
 
 function isFolder(video: VideoInfo) {
   return video.platform === "gdrive-folder";
 }
 
 interface VideoModalProps {
-  url: string;
+  url?: string;
+  playbackId?: string;
+  title?: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function VideoModal({ url, isOpen, onClose }: VideoModalProps) {
+export default function VideoModal({ url = "", playbackId, title, isOpen, onClose }: VideoModalProps) {
   const video = detectVideo(url);
   const embedUrl = getEmbedUrl(video);
   const folder = isFolder(video);
+  const muxPlaybackId = getMuxPlaybackId(url, playbackId);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -47,13 +51,11 @@ export default function VideoModal({ url, isOpen, onClose }: VideoModalProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/90"
             onClick={onClose}
           />
 
-          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
@@ -63,7 +65,6 @@ export default function VideoModal({ url, isOpen, onClose }: VideoModalProps) {
             </svg>
           </button>
 
-          {/* Video / Folder */}
           <motion.div
             className={`relative w-full z-10 rounded-xl overflow-hidden bg-black ${folder ? "max-w-2xl h-[70vh]" : "max-w-4xl aspect-video"}`}
             initial={{ scale: 0.9, opacity: 0 }}
@@ -71,7 +72,15 @@ export default function VideoModal({ url, isOpen, onClose }: VideoModalProps) {
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {embedUrl ? (
+            {muxPlaybackId ? (
+              <MuxPlayer
+                playbackId={muxPlaybackId}
+                metadata={{ video_title: title || "Player video" }}
+                autoPlay
+                className="absolute inset-0 h-full w-full"
+                style={{ height: "100%", width: "100%" }}
+              />
+            ) : embedUrl ? (
               <iframe
                 src={embedUrl}
                 className="absolute inset-0 w-full h-full"
@@ -80,14 +89,18 @@ export default function VideoModal({ url, isOpen, onClose }: VideoModalProps) {
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/50 hover:text-white text-sm transition-colors"
-                >
-                  Open video in new tab
-                </a>
+                {url ? (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/50 hover:text-white text-sm transition-colors"
+                  >
+                    Open video in new tab
+                  </a>
+                ) : (
+                  <span className="text-white/40 text-sm">Video is still processing</span>
+                )}
               </div>
             )}
           </motion.div>

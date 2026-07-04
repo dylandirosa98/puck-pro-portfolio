@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
+    "@mux/mux-player-react": "^3.13.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
     "framer-motion": "^12.34.0",

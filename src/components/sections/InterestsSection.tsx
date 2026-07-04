@@ -3,9 +3,10 @@
 import { motion } from "framer-motion";
 import { Player } from "@/lib/types";
 import MediaCarousel from "./MediaCarousel";
+import { hasMediaSource } from "@/lib/video";
 
 export default function InterestsSection({ player }: { player: Player }) {
-  const media = (player.interestsMedia ?? []).filter((m) => m.url?.trim());
+  const media = (player.interestsMedia ?? []).filter(hasMediaSource);
   if (!player.interests && media.length === 0) return null;
 
   return (

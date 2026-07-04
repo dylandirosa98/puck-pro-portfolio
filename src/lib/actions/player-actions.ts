@@ -2,12 +2,47 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient as createClient } from "@/lib/supabase/admin";
+import { deleteMuxAsset } from "@/lib/mux";
 
 function slugify(firstName: string, lastName: string): string {
   return `${firstName}-${lastName}`
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-");
+}
+
+function collectMuxAssetIds(value: unknown): Set<string> {
+  const ids = new Set<string>();
+
+  function walk(node: unknown) {
+    if (!node || typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    const record = node as Record<string, unknown>;
+    if (typeof record.muxAssetId === "string" && record.muxAssetId.trim()) {
+      ids.add(record.muxAssetId);
+    }
+
+    Object.values(record).forEach(walk);
+  }
+
+  walk(value);
+  return ids;
+}
+
+async function deleteMuxAssets(assetIds: Iterable<string>) {
+  await Promise.all(
+    Array.from(assetIds).map(async (assetId) => {
+      try {
+        await deleteMuxAsset(assetId);
+      } catch (error) {
+        console.error(`Failed to delete Mux asset ${assetId}`, error);
+      }
+    })
+  );
 }
 
 export async function createPlayer(formData: FormData) {
@@ -144,7 +179,7 @@ export async function deletePlayer(id: string) {
   // Get the player's slug first for storage cleanup
   const { data: player } = await supabase
     .from("players")
-    .select("slug")
+    .select("slug, media, interests_media, training_videos, timeline")
     .eq("id", id)
     .single();
 
@@ -158,6 +193,8 @@ export async function deletePlayer(id: string) {
       const filePaths = files.map((f) => `${player.slug}/${f.name}`);
       await supabase.storage.from("player-images").remove(filePaths);
     }
+
+    await deleteMuxAssets(collectMuxAssetIds(player));
   }
 
   const { error } = await supabase

@@ -32,7 +32,7 @@ export interface PlayerRow {
   interests_media: any;
   training_video_url: string | null;
   training_description: string | null;
-  training_videos: { url: string; description: string }[] | null;
+  training_videos: { url: string; title?: string; description?: string; thumbnailUrl?: string; muxPlaybackId?: string; muxAssetId?: string; muxUploadId?: string }[] | null;
   transcript_url: string | null;
   show_stats_bar: boolean;
   light_mode: boolean;
@@ -79,10 +79,14 @@ export function rowToPlayer(row: PlayerRow): PlayerWithMeta {
     trainingDescription: row.training_description ?? undefined,
     trainingVideos: (() => {
       if (row.training_videos && row.training_videos.length > 0) {
-        return row.training_videos.map((v: { url: string; title?: string; description?: string }) => ({
+        return row.training_videos.map((v: { url: string; title?: string; description?: string; thumbnailUrl?: string; muxPlaybackId?: string; muxAssetId?: string; muxUploadId?: string }) => ({
           url: v.url,
           title: v.title ?? "",
           description: v.description ?? "",
+          thumbnailUrl: v.thumbnailUrl,
+          muxPlaybackId: v.muxPlaybackId,
+          muxAssetId: v.muxAssetId,
+          muxUploadId: v.muxUploadId,
         }));
       }
       if (row.training_video_url) return [{ url: row.training_video_url }];

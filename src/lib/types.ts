@@ -29,6 +29,10 @@ export interface MediaItem {
   type: "photo" | "video";
   url: string;
   title?: string;
+  thumbnailUrl?: string;
+  muxPlaybackId?: string;
+  muxAssetId?: string;
+  muxUploadId?: string;
 }
 
 export interface TimelineEntry {
@@ -66,7 +70,7 @@ export interface Player {
   interestsMedia?: MediaItem[];
   trainingVideoUrl?: string;
   trainingDescription?: string;
-  trainingVideos?: { url: string; title?: string; description?: string }[];
+  trainingVideos?: { url: string; title?: string; description?: string; thumbnailUrl?: string; muxPlaybackId?: string; muxAssetId?: string; muxUploadId?: string }[];
   timeline?: TimelineEntry[];
   transcriptUrl?: string;
   showStatsBar?: boolean;

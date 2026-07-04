@@ -3,12 +3,14 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import MuxPlayer from "@mux/mux-player-react";
 import { Highlight } from "@/lib/types";
-import { detectVideo } from "@/lib/video";
+import { detectVideo, getMuxPlaybackId, getMuxThumbnailUrl } from "@/lib/video";
 
 function VideoSlide({ highlight, active }: { highlight: Highlight; active: boolean }) {
   const [playing, setPlaying] = useState(false);
   const video = detectVideo(highlight.url);
+  const muxPlaybackId = getMuxPlaybackId(highlight.url);
 
   // Reset playing state when slide becomes inactive
   if (!active && playing) setPlaying(false);
@@ -46,6 +48,40 @@ function VideoSlide({ highlight, active }: { highlight: Highlight; active: boole
           className="absolute inset-0 w-full h-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
+        />
+      );
+    }
+    if (muxPlaybackId) {
+      if (!playing) {
+        return (
+          <button
+            onClick={() => setPlaying(true)}
+            className="absolute inset-0 w-full h-full group cursor-pointer"
+          >
+            <Image
+              src={getMuxThumbnailUrl(muxPlaybackId)}
+              alt={highlight.title}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+              <div className="w-16 h-16 rounded-full bg-white/90 group-hover:bg-white flex items-center justify-center transition-colors shadow-lg">
+                <svg viewBox="0 0 24 24" fill="#0a0a0a" className="w-7 h-7 ml-1">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          </button>
+        );
+      }
+      return (
+        <MuxPlayer
+          playbackId={muxPlaybackId}
+          metadata={{ video_title: highlight.title || "Highlight" }}
+          autoPlay
+          className="absolute inset-0 h-full w-full"
+          style={{ height: "100%", width: "100%" }}
         />
       );
     }

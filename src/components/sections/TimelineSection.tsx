@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Player, TimelineEntry } from "@/lib/types";
 import MediaCarousel from "./MediaCarousel";
+import { hasMediaSource } from "@/lib/video";
 
 function TimelineItem({ entry, accentColor, isOpen, onToggle, lightMode }: {
   entry: TimelineEntry;
@@ -12,7 +13,7 @@ function TimelineItem({ entry, accentColor, isOpen, onToggle, lightMode }: {
   onToggle: () => void;
   lightMode?: boolean;
 }) {
-  const media = (entry.media ?? []).filter((m) => m.url?.trim());
+  const media = (entry.media ?? []).filter(hasMediaSource);
 
   return (
     <div className="border-b border-white/5 last:border-0">

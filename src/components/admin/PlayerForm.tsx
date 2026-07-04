@@ -6,6 +6,7 @@ import { createPlayer, updatePlayer } from "@/lib/actions/player-actions";
 import ImageUpload from "./ImageUpload";
 import PdfUpload from "./PdfUpload";
 import MediaPhotoUpload from "./MediaPhotoUpload";
+import MediaVideoUpload from "./MediaVideoUpload";
 import type { PlayerWithMeta, PlayerStats, SeasonStats, Highlight, SocialLink, MediaItem } from "@/lib/types";
 
 interface PlayerFormProps {
@@ -134,7 +135,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [interests, setInterests] = useState(player?.interests ?? "");
   const [interestsMedia, setInterestsMedia] = useState<MediaItem[]>(player?.interestsMedia ?? []);
-  const [trainingVideos, setTrainingVideos] = useState<{ url: string; title?: string; description?: string }[]>(() => {
+  const [trainingVideos, setTrainingVideos] = useState<{ url: string; title?: string; description?: string; thumbnailUrl?: string; muxPlaybackId?: string; muxAssetId?: string; muxUploadId?: string }[]>(() => {
     if (player?.trainingVideos && player.trainingVideos.length > 0) {
       return player.trainingVideos.map((v) => ({ url: v.url, title: v.title ?? "", description: v.description ?? "" }));
     }
@@ -342,15 +343,13 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 />
               </div>
             ) : (
-              <div>
-                <label className={labelClass}>Video URL</label>
-                <input
-                  className={inputClass}
-                  value={item.url}
-                  onChange={(e) => setMedia(media.map((m, j) => j === i ? { ...m, url: e.target.value } : m))}
-                  placeholder="YouTube, Vimeo, or Google Drive link"
-                />
-              </div>
+              <MediaVideoUpload
+                item={item}
+                slug={slug}
+                inputClass={inputClass}
+                labelClass={labelClass}
+                onChange={(next) => setMedia(media.map((m, j) => j === i ? next : m))}
+              />
             )}
           </div>
         ))}
@@ -815,15 +814,13 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 />
               </div>
             ) : (
-              <div>
-                <label className={labelClass}>Video URL</label>
-                <input
-                  className={inputClass}
-                  value={item.url}
-                  onChange={(e) => setInterestsMedia(interestsMedia.map((m, j) => j === i ? { ...m, url: e.target.value } : m))}
-                  placeholder="YouTube, Vimeo, or Google Drive link"
-                />
-              </div>
+              <MediaVideoUpload
+                item={item}
+                slug={slug}
+                inputClass={inputClass}
+                labelClass={labelClass}
+                onChange={(next) => setInterestsMedia(interestsMedia.map((m, j) => j === i ? next : m))}
+              />
             )}
           </div>
         ))}
@@ -854,15 +851,28 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 Remove
               </button>
             </div>
-            <div>
-              <label className={labelClass}>Video URL</label>
-              <input
-                className={inputClass}
-                value={tv.url}
-                onChange={(e) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? { ...t, url: e.target.value } : t))}
-                placeholder="YouTube, Vimeo, or Google Drive link"
-              />
-            </div>
+            <MediaVideoUpload
+              item={{
+                type: "video",
+                url: tv.url,
+                title: tv.title,
+                thumbnailUrl: tv.thumbnailUrl,
+                muxPlaybackId: tv.muxPlaybackId,
+                muxAssetId: tv.muxAssetId,
+                muxUploadId: tv.muxUploadId,
+              }}
+              slug={slug}
+              inputClass={inputClass}
+              labelClass={labelClass}
+              onChange={(next) => setTrainingVideos(trainingVideos.map((t, j) => j === i ? {
+                ...t,
+                url: next.url,
+                thumbnailUrl: next.thumbnailUrl,
+                muxPlaybackId: next.muxPlaybackId,
+                muxAssetId: next.muxAssetId,
+                muxUploadId: next.muxUploadId,
+              } : t))}
+            />
             <div>
               <label className={labelClass}>Slide Title <span className="text-white/20 font-normal">(optional)</span></label>
               <input
@@ -1009,15 +1019,13 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                     />
                   </div>
                 ) : (
-                  <div>
-                    <label className={labelClass}>Video URL</label>
-                    <input
-                      className={inputClass}
-                      value={item.url}
-                      onChange={(e) => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.map((m, k) => k === mi ? { ...m, url: e.target.value } : m) } : t))}
-                      placeholder="YouTube, Vimeo, or Google Drive link"
-                    />
-                  </div>
+                  <MediaVideoUpload
+                    item={item}
+                    slug={slug}
+                    inputClass={inputClass}
+                    labelClass={labelClass}
+                    onChange={(next) => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.map((m, k) => k === mi ? next : m) } : t))}
+                  />
                 )}
               </div>
             ))}

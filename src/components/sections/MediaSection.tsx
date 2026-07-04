@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { MediaItem } from "@/lib/types";
-import { detectVideo } from "@/lib/video";
+import { detectVideo, getMuxPlaybackId, getMuxThumbnailUrl, hasMediaSource } from "@/lib/video";
 import VideoModal from "@/components/VideoModal";
 
 function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: string }) {
@@ -24,7 +24,9 @@ function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: strin
   }
 
   // Video
-  const video = detectVideo(item.url);
+  const video = detectVideo(item.url || "");
+  const muxPlaybackId = getMuxPlaybackId(item.url, item.muxPlaybackId);
+  const muxThumbnail = item.thumbnailUrl || (muxPlaybackId ? getMuxThumbnailUrl(muxPlaybackId) : "");
 
   return (
     <div className="w-full">
@@ -32,7 +34,15 @@ function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: strin
         className="relative w-full aspect-video rounded-xl overflow-hidden bg-black cursor-pointer group"
         onClick={() => setShowModal(true)}
       >
-        {video.platform === "youtube" ? (
+        {muxThumbnail ? (
+          <Image
+            src={muxThumbnail}
+            alt={item.title ?? ""}
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        ) : video.platform === "youtube" ? (
           <Image
             src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
             alt={item.title ?? ""}
@@ -57,7 +67,7 @@ function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: strin
       {item.title && (
         <p className="mt-3 text-sm font-medium text-white/60 text-center">{item.title}</p>
       )}
-      <VideoModal url={item.url} isOpen={showModal} onClose={() => setShowModal(false)} />
+      <VideoModal url={item.url} playbackId={item.muxPlaybackId} title={item.title} isOpen={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
 }
@@ -72,7 +82,7 @@ export default function MediaSection({ items, accentColor }: MediaSectionProps) 
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
-  const valid = (items ?? []).filter((m) => m.url?.trim());
+  const valid = (items ?? []).filter(hasMediaSource);
   if (valid.length === 0) return null;
 
   function go(next: number) {

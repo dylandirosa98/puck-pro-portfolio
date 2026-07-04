@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { MediaItem } from "@/lib/types";
-import { detectVideo } from "@/lib/video";
+import { detectVideo, getMuxPlaybackId, getMuxThumbnailUrl, hasMediaSource } from "@/lib/video";
 import VideoModal from "@/components/VideoModal";
 
 function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: string }) {
@@ -23,7 +23,9 @@ function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: strin
     );
   }
 
-  const video = detectVideo(item.url);
+  const video = detectVideo(item.url || "");
+  const muxPlaybackId = getMuxPlaybackId(item.url, item.muxPlaybackId);
+  const muxThumbnail = item.thumbnailUrl || (muxPlaybackId ? getMuxThumbnailUrl(muxPlaybackId) : "");
 
   if (video.platform === "gdrive-folder") {
     return (
@@ -56,7 +58,15 @@ function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: strin
         className="relative w-full aspect-video rounded-xl overflow-hidden bg-black cursor-pointer group"
         onClick={() => setShowModal(true)}
       >
-        {video.platform === "youtube" ? (
+        {muxThumbnail ? (
+          <Image
+            src={muxThumbnail}
+            alt={item.title ?? ""}
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        ) : video.platform === "youtube" ? (
           <Image
             src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
             alt={item.title ?? ""}
@@ -81,7 +91,7 @@ function MediaSlide({ item, accentColor }: { item: MediaItem; accentColor: strin
       {item.title && (
         <p className="mt-3 text-sm font-medium text-white/60 text-center">{item.title}</p>
       )}
-      <VideoModal url={item.url} isOpen={showModal} onClose={() => setShowModal(false)} />
+      <VideoModal url={item.url} playbackId={item.muxPlaybackId} title={item.title} isOpen={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
 }
@@ -97,20 +107,21 @@ export default function MediaCarousel({ items, accentColor, lightMode }: MediaCa
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
-  if (items.length === 0) return null;
+  const valid = (items ?? []).filter(hasMediaSource);
+  if (valid.length === 0) return null;
 
   function go(next: number) {
     setDirection(next > index ? 1 : -1);
     setIndex(next);
   }
   function prev() { if (index > 0) go(index - 1); }
-  function next() { if (index < items.length - 1) go(index + 1); }
+  function next() { if (index < valid.length - 1) go(index + 1); }
 
   return (
     <div>
-      {items.length > 1 && (
+      {valid.length > 1 && (
         <div className="flex justify-end mb-3">
-          <span className="text-xs text-white/30">{index + 1} / {items.length}</span>
+          <span className="text-xs text-white/30">{index + 1} / {valid.length}</span>
         </div>
       )}
 
@@ -139,12 +150,12 @@ export default function MediaCarousel({ items, accentColor, lightMode }: MediaCa
             exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <MediaSlide item={items[index]} accentColor={accentColor} />
+            <MediaSlide item={valid[index]} accentColor={accentColor} />
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {items.length > 1 && (
+      {valid.length > 1 && (
         <div className="flex items-center justify-center gap-4 mt-5">
           <button
             onClick={prev}
@@ -156,7 +167,7 @@ export default function MediaCarousel({ items, accentColor, lightMode }: MediaCa
             </svg>
           </button>
           <div className="flex gap-1.5">
-            {items.map((_, i) => (
+            {valid.map((_, i) => (
               <button
                 key={i}
                 onClick={() => go(i)}
@@ -171,7 +182,7 @@ export default function MediaCarousel({ items, accentColor, lightMode }: MediaCa
           </div>
           <button
             onClick={next}
-            disabled={index === items.length - 1}
+            disabled={index === valid.length - 1}
             className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">

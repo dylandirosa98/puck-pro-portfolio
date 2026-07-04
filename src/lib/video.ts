@@ -2,6 +2,7 @@ export type VideoInfo =
   | { platform: "youtube"; id: string }
   | { platform: "vimeo"; id: string }
   | { platform: "wistia"; id: string }
+  | { platform: "mux"; id: string }
   | { platform: "gdrive-file"; id: string }
   | { platform: "gdrive-folder"; id: string }
   | { platform: "unknown" };
@@ -27,6 +28,10 @@ export function detectVideo(url: string): VideoInfo {
   );
   if (wistiaMatch) return { platform: "wistia", id: wistiaMatch[1] };
 
+  // Mux playback URLs
+  const muxMatch = url.match(/(?:stream|player|image)\.mux\.com\/([a-zA-Z0-9_-]+)(?:\.m3u8|\/|$)/);
+  if (muxMatch) return { platform: "mux", id: muxMatch[1] };
+
   // Google Drive folder
   const gdriveFolderMatch = url.match(/drive\.google\.com\/drive(?:\/u\/\d+)?\/folders\/([a-zA-Z0-9_-]+)/);
   if (gdriveFolderMatch) return { platform: "gdrive-folder", id: gdriveFolderMatch[1] };
@@ -46,6 +51,8 @@ export function getEmbedUrl(video: VideoInfo): string | null {
       return `https://player.vimeo.com/video/${video.id}?autoplay=1&title=0&byline=0&portrait=0`;
     case "wistia":
       return `https://fast.wistia.net/embed/iframe/${video.id}?autoPlay=true&seo=true&videoFoam=false`;
+    case "mux":
+      return null;
     case "gdrive-file":
       return `https://drive.google.com/file/d/${video.id}/preview`;
     case "gdrive-folder":
@@ -53,4 +60,19 @@ export function getEmbedUrl(video: VideoInfo): string | null {
     default:
       return null;
   }
+}
+
+export function getMuxThumbnailUrl(playbackId: string): string {
+  return `https://image.mux.com/${playbackId}/thumbnail.jpg?fit_mode=preserve`;
+}
+
+export function getMuxPlaybackId(url?: string, explicitPlaybackId?: string): string | null {
+  if (explicitPlaybackId) return explicitPlaybackId;
+  if (!url) return null;
+  const video = detectVideo(url);
+  return video.platform === "mux" ? video.id : null;
+}
+
+export function hasMediaSource(item: { url?: string; muxPlaybackId?: string }): boolean {
+  return Boolean(item.url?.trim() || item.muxPlaybackId?.trim());
 }
