@@ -50,10 +50,14 @@ function getVideoExtension(file: File) {
   return "mp4";
 }
 
-function getOutputMimeType(ext: string) {
-  if (ext === "webm") return "video/webm";
-  if (ext === "mov") return "video/quicktime";
-  return "video/mp4";
+function formatError(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Video upload failed";
+}
+
+function setProgressSafe(onProgress: (progress: number) => void, progress: number) {
+  onProgress(Math.max(0, Math.min(100, Math.round(progress))));
 }
 
 async function removeAudioTrack(file: File, onProgress: (progress: number) => void): Promise<File> {
@@ -62,12 +66,12 @@ async function removeAudioTrack(file: File, onProgress: (progress: number) => vo
 
   const ext = getVideoExtension(file);
   const inputName = `input.${ext}`;
-  const outputName = `muted-${Date.now()}.${ext}`;
+  const outputName = `muted-${Date.now()}.mp4`;
 
   onProgress(0);
   const handleProgress = ({ progress }: { progress: number }) => {
     if (Number.isFinite(progress)) {
-      onProgress(Math.max(0, Math.min(100, Math.round(progress * 100))));
+      setProgressSafe(onProgress, progress * 100);
     }
   };
 
@@ -75,18 +79,54 @@ async function removeAudioTrack(file: File, onProgress: (progress: number) => vo
 
   try {
     await ffmpeg.writeFile(inputName, await fetchFile(file));
-    const exitCode = await ffmpeg.exec(["-i", inputName, "-map", "0:v:0", "-c:v", "copy", "-an", outputName]);
+
+    let exitCode = await ffmpeg.exec([
+      "-y",
+      "-i",
+      inputName,
+      "-map",
+      "0:v:0",
+      "-c:v",
+      "copy",
+      "-an",
+      "-movflags",
+      "faststart",
+      outputName,
+    ]);
 
     if (exitCode !== 0) {
-      throw new Error("Could not remove audio from this video");
+      setProgressSafe(onProgress, 0);
+      exitCode = await ffmpeg.exec([
+        "-y",
+        "-i",
+        inputName,
+        "-map",
+        "0:v:0",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "veryfast",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-an",
+        "-movflags",
+        "faststart",
+        outputName,
+      ]);
+    }
+
+    if (exitCode !== 0) {
+      throw new Error("Could not remove audio from this video. Try uploading with audio, or export the clip as MP4 first.");
     }
 
     const data = await ffmpeg.readFile(outputName);
     const bytes = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
     const buffer = new ArrayBuffer(bytes.byteLength);
     new Uint8Array(buffer).set(bytes);
-    const mutedBlob = new Blob([buffer], { type: getOutputMimeType(ext) });
-    const mutedName = file.name.replace(/(\.[^.]+)?$/, `-muted.${ext}`);
+    const mutedBlob = new Blob([buffer], { type: "video/mp4" });
+    const mutedName = file.name.replace(/(\.[^.]+)?$/, "-muted.mp4");
     return new File([mutedBlob], mutedName, { type: mutedBlob.type });
   } finally {
     ffmpeg.off("progress", handleProgress);
@@ -189,7 +229,7 @@ export default function MediaVideoUpload({ item, slug, inputClass, labelClass, o
       });
       setStatus("Ready");
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Video upload failed");
+      alert(formatError(error));
       setStatus("");
     } finally {
       setUploading(false);
