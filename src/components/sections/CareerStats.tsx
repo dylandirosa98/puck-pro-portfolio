@@ -1,13 +1,49 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { SeasonStats } from "@/lib/types";
+import { PlayerStats, SeasonStats } from "@/lib/types";
 
 interface CareerStatsProps {
   seasons: SeasonStats[];
+  position?: string;
 }
 
-export default function CareerStats({ seasons }: CareerStatsProps) {
+type StatItem = {
+  key: keyof PlayerStats;
+  label: string;
+  decimals?: number;
+  prefixPlus?: boolean;
+  accent?: boolean;
+};
+
+const playerStatItems: StatItem[] = [
+  { key: "gamesPlayed", label: "GP" },
+  { key: "goals", label: "G" },
+  { key: "assists", label: "A" },
+  { key: "points", label: "PTS", accent: true },
+  { key: "plusMinus", label: "+/-", prefixPlus: true },
+  { key: "pim", label: "PIM" },
+];
+
+const goalieStatItems: StatItem[] = [
+  { key: "gamesPlayed", label: "GP" },
+  { key: "wins", label: "W", accent: true },
+  { key: "losses", label: "L" },
+  { key: "goalsAgainstAverage", label: "GAA", decimals: 2 },
+  { key: "savePercentage", label: "SV%", decimals: 3 },
+  { key: "shutouts", label: "SO" },
+];
+
+function formatStat(stats: PlayerStats, item: StatItem) {
+  const value = Number(stats[item.key] ?? 0);
+  const formatted = item.decimals !== undefined ? value.toFixed(item.decimals) : Math.round(value).toString();
+  return `${item.prefixPlus && value > 0 ? "+" : ""}${formatted}`;
+}
+
+export default function CareerStats({ seasons, position }: CareerStatsProps) {
+  const statItems = position === "Goalie" ? goalieStatItems : playerStatItems;
+  const featuredStat = position === "Goalie" ? goalieStatItems[3] : playerStatItems[3];
+
   return (
     <section className="px-5 py-12 lg:max-w-4xl lg:mx-auto lg:py-16">
       <motion.div
@@ -16,7 +52,6 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        {/* Section label */}
         <div className="flex items-center gap-3 mb-6">
           <div
             className="w-1 h-6 rounded-full"
@@ -27,7 +62,6 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
           </h2>
         </div>
 
-        {/* Mobile: Stacked cards */}
         <div className="space-y-3 lg:hidden">
           {seasons.map((season, i) => (
             <motion.div
@@ -38,7 +72,6 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
             >
-              {/* Season header */}
               <div className="flex items-start justify-between mb-3 gap-2">
                 <div className="min-w-0">
                   <span className="text-sm font-bold">{season.season}</span>
@@ -50,29 +83,18 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
                   className="text-xs font-bold px-2 py-0.5 rounded"
                   style={{ backgroundColor: "var(--accent)", opacity: 0.8 }}
                 >
-                  {season.stats.points} PTS
+                  {formatStat(season.stats, featuredStat)} {featuredStat.label}
                 </span>
               </div>
 
-              {/* Stat grid */}
               <div className="grid grid-cols-6 gap-2 text-center">
-                {(
-                  [
-                    ["GP", season.stats.gamesPlayed],
-                    ["G", season.stats.goals],
-                    ["A", season.stats.assists],
-                    ["PTS", season.stats.points],
-                    ["+/-", season.stats.plusMinus],
-                    ["PIM", season.stats.pim],
-                  ] as const
-                ).map(([label, value]) => (
-                  <div key={label}>
+                {statItems.map((item) => (
+                  <div key={item.key}>
                     <div className="text-base font-bold tabular-nums">
-                      {label === "+/-" && value > 0 ? "+" : ""}
-                      {value}
+                      {formatStat(season.stats, item)}
                     </div>
                     <div className="text-[9px] text-white/30 uppercase tracking-wider">
-                      {label}
+                      {item.label}
                     </div>
                   </div>
                 ))}
@@ -81,7 +103,6 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
           ))}
         </div>
 
-        {/* Desktop: Table */}
         <motion.div
           className="hidden lg:block"
           initial={{ opacity: 0 }}
@@ -96,12 +117,9 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
                   <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wider">Season</th>
                   <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wider">Team</th>
                   <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wider">League</th>
-                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">GP</th>
-                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">G</th>
-                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">A</th>
-                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">PTS</th>
-                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">+/-</th>
-                  <th className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">PIM</th>
+                  {statItems.map((item) => (
+                    <th key={item.key} className="text-center py-3 px-3 font-medium text-xs uppercase tracking-wider">{item.label}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -117,18 +135,15 @@ export default function CareerStats({ seasons }: CareerStatsProps) {
                     <td className="py-3 px-4 font-bold">{season.season}</td>
                     <td className="py-3 px-4 text-white/70">{season.team}</td>
                     <td className="py-3 px-4 text-white/50">{season.league}</td>
-                    <td className="py-3 px-3 text-center tabular-nums font-medium">{season.stats.gamesPlayed}</td>
-                    <td className="py-3 px-3 text-center tabular-nums font-medium">{season.stats.goals}</td>
-                    <td className="py-3 px-3 text-center tabular-nums font-medium">{season.stats.assists}</td>
-                    <td className="py-3 px-3 text-center tabular-nums font-bold"
-                      style={{ color: "var(--accent)" }}
-                    >
-                      {season.stats.points}
-                    </td>
-                    <td className="py-3 px-3 text-center tabular-nums font-medium text-white/70">
-                      {season.stats.plusMinus > 0 ? "+" : ""}{season.stats.plusMinus}
-                    </td>
-                    <td className="py-3 px-3 text-center tabular-nums font-medium text-white/50">{season.stats.pim}</td>
+                    {statItems.map((item) => (
+                      <td
+                        key={item.key}
+                        className={`py-3 px-3 text-center tabular-nums ${item.accent ? "font-bold" : "font-medium text-white/70"}`}
+                        style={item.accent ? { color: "var(--accent)" } : undefined}
+                      >
+                        {formatStat(season.stats, item)}
+                      </td>
+                    ))}
                   </motion.tr>
                 ))}
               </tbody>

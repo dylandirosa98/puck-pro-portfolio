@@ -27,6 +27,11 @@ const emptyStats: PlayerStats = {
   points: 0,
   plusMinus: 0,
   pim: 0,
+  wins: 0,
+  losses: 0,
+  goalsAgainstAverage: 0,
+  savePercentage: 0,
+  shutouts: 0,
 };
 
 const emptySeason: SeasonStats = {
@@ -37,6 +42,32 @@ const emptySeason: SeasonStats = {
 };
 
 const emptyHighlight: Highlight = { title: "", url: "" };
+
+const playerStatFields = [
+  ["gamesPlayed", "GP", "number"],
+  ["goals", "G", "number"],
+  ["assists", "A", "number"],
+  ["points", "PTS", "number"],
+  ["plusMinus", "+/-", "number"],
+  ["pim", "PIM", "number"],
+] as const;
+
+const goalieStatFields = [
+  ["gamesPlayed", "GP", "number"],
+  ["wins", "W", "number"],
+  ["losses", "L", "number"],
+  ["goalsAgainstAverage", "GAA", "decimal"],
+  ["savePercentage", "SV%", "decimal"],
+  ["shutouts", "SO", "number"],
+] as const;
+
+type StatField = (typeof playerStatFields | typeof goalieStatFields)[number];
+
+function parseStatInput(value: string, inputType: StatField[2]) {
+  const parsed = inputType === "decimal" ? parseFloat(value) : parseInt(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 
 const platformOptions: SocialLink["platform"][] = [
   "instagram",
@@ -163,6 +194,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const statFields = position === "Goalie" ? goalieStatFields : playerStatFields;
 
   // Auto-generate slug from name
   useEffect(() => {
@@ -453,26 +485,18 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         </summary>
         <div className="mt-4 space-y-4">
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {(
-            [
-              ["gamesPlayed", "GP"],
-              ["goals", "G"],
-              ["assists", "A"],
-              ["points", "PTS"],
-              ["plusMinus", "+/-"],
-              ["pim", "PIM"],
-            ] as const
-          ).map(([key, label]) => (
+          {statFields.map(([key, label, inputType]) => (
             <div key={key}>
               <label className={labelClass}>{label}</label>
               <input
                 className={inputClass}
                 type="number"
-                value={currentStats[key]}
+                step={inputType === "decimal" ? "0.001" : "1"}
+                value={currentStats[key] ?? 0}
                 onChange={(e) =>
                   setCurrentStats((prev) => ({
                     ...prev,
-                    [key]: parseInt(e.target.value) || 0,
+                    [key]: parseStatInput(e.target.value, inputType),
                   }))
                 }
               />
@@ -540,29 +564,21 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               </div>
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-              {(
-                [
-                  ["gamesPlayed", "GP"],
-                  ["goals", "G"],
-                  ["assists", "A"],
-                  ["points", "PTS"],
-                  ["plusMinus", "+/-"],
-                  ["pim", "PIM"],
-                ] as const
-              ).map(([key, label]) => (
+              {statFields.map(([key, label, inputType]) => (
                 <div key={key}>
                   <label className={labelClass}>{label}</label>
                   <input
                     className={inputClass}
                     type="number"
-                    value={season.stats[key]}
+                    step={inputType === "decimal" ? "0.001" : "1"}
+                    value={season.stats[key] ?? 0}
                     onChange={(e) => {
                       const updated = [...seasonHistory];
                       updated[i] = {
                         ...updated[i],
                         stats: {
                           ...updated[i].stats,
-                          [key]: parseInt(e.target.value) || 0,
+                          [key]: parseStatInput(e.target.value, inputType),
                         },
                       };
                       setSeasonHistory(updated);

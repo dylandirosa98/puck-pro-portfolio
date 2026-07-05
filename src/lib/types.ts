@@ -5,6 +5,11 @@ export interface PlayerStats {
   points: number;
   plusMinus: number;
   pim: number;
+  wins?: number;
+  losses?: number;
+  goalsAgainstAverage?: number;
+  savePercentage?: number;
+  shutouts?: number;
 }
 
 export interface SeasonStats {

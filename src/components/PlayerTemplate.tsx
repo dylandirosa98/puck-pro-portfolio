@@ -72,7 +72,7 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
         return <TrainingSection key="training" player={player} lightMode={player.lightMode} />;
       case "career-stats":
         return player.seasonHistory.length > 0
-          ? <CareerStats key="career-stats" seasons={player.seasonHistory} />
+          ? <CareerStats key="career-stats" seasons={player.seasonHistory} position={player.position} />
           : null;
       case "highlights":
         return <HighlightsSection key="highlights" highlights={player.highlights} lightMode={player.lightMode} />;
@@ -106,7 +106,7 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
         </div>
       )}
 
-      {(player.showStatsBar ?? true) && <StatsBar stats={player.currentStats} />}
+      {(player.showStatsBar ?? true) && <StatsBar stats={player.currentStats} position={player.position} />}
       {order.map(renderSection)}
       <SocialFooter socialLinks={player.socialLinks} lightMode={player.lightMode} />
     </main>

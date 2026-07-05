@@ -16,7 +16,7 @@ export const BUILDER_DEFAULTS: WizardState = {
   headshotUrl: "",
   heroImageUrl: "",
   themeColor: "#b91c1c",
-  currentStats: { gamesPlayed: 0, goals: 0, assists: 0, points: 0, plusMinus: 0, pim: 0 },
+  currentStats: { gamesPlayed: 0, goals: 0, assists: 0, points: 0, plusMinus: 0, pim: 0, wins: 0, losses: 0, goalsAgainstAverage: 0, savePercentage: 0, shutouts: 0 },
   seasonHistory: [],
   highlightReelUrl: "",
   highlights: [],
