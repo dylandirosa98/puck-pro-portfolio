@@ -7,7 +7,7 @@ import ImageUpload from "./ImageUpload";
 import PdfUpload from "./PdfUpload";
 import MediaPhotoUpload from "./MediaPhotoUpload";
 import MediaVideoUpload from "./MediaVideoUpload";
-import type { PlayerWithMeta, PlayerStats, SeasonStats, Highlight, SocialLink, MediaItem } from "@/lib/types";
+import type { PlayerWithMeta, PlayerStats, SeasonStats, Highlight, SocialLink, MediaItem, Skillset } from "@/lib/types";
 
 interface PlayerFormProps {
   player?: PlayerWithMeta;
@@ -117,7 +117,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [numberColor, setNumberColor] = useState(player?.numberColor ?? "");
   const [highlightReelUrl, setHighlightReelUrl] = useState(player?.highlightReelUrl ?? "");
   const [resumeUrl, setResumeUrl] = useState(player?.resumeUrl ?? "");
-  const [skillsets, setSkillsets] = useState<{ name: string; description: string; watchUrl?: string }[]>(player?.skillsets ?? []);
+  const [skillsets, setSkillsets] = useState<Skillset[]>(player?.skillsets ?? []);
   const [sectionOrder, setSectionOrder] = useState<string[]>(() => {
     const ALL_SECTIONS = ["about", "skillsets", "interests", "training", "timeline", "career-stats", "highlights"];
     const raw = player?.sectionOrder && player.sectionOrder.length > 0
@@ -137,7 +137,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [interestsMedia, setInterestsMedia] = useState<MediaItem[]>(player?.interestsMedia ?? []);
   const [trainingVideos, setTrainingVideos] = useState<{ url: string; title?: string; description?: string; thumbnailUrl?: string; muxPlaybackId?: string; muxAssetId?: string; muxUploadId?: string }[]>(() => {
     if (player?.trainingVideos && player.trainingVideos.length > 0) {
-      return player.trainingVideos.map((v) => ({ url: v.url, title: v.title ?? "", description: v.description ?? "" }));
+      return player.trainingVideos.map((v) => ({
+        url: v.url,
+        title: v.title ?? "",
+        description: v.description ?? "",
+        thumbnailUrl: v.thumbnailUrl,
+        muxPlaybackId: v.muxPlaybackId,
+        muxAssetId: v.muxAssetId,
+        muxUploadId: v.muxUploadId,
+      }));
     }
     if (player?.trainingVideoUrl) return [{ url: player.trainingVideoUrl, title: "", description: "" }];
     return [];
@@ -225,15 +233,16 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const selectClass = `${inputClass} bg-neutral-950`;
   const optionClass = "bg-neutral-950 text-white";
   const labelClass = "block text-xs font-medium text-white/50 mb-1.5";
-  const sectionClass = "space-y-4 p-5 bg-white/[0.02] rounded-xl border border-white/5";
+  const sectionClass = "p-5 bg-white/[0.02] rounded-xl border border-white/5";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Basic Info */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Basic Info
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>First Name</label>
@@ -291,13 +300,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           <label className={labelClass}>Bio</label>
           <textarea className={`${inputClass} min-h-[100px]`} value={bio} onChange={(e) => setBio(e.target.value)} />
         </div>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Media Carousel */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Media (Photos &amp; Videos)
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         {media.map((item, i) => (
           <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
             <div className="flex items-center justify-between">
@@ -361,13 +372,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           + Add Photo or Video
         </button>
         <p className="text-[10px] text-white/20">Shows as a carousel below the About section. Leave empty to hide.</p>
-      </fieldset>
+        </div>
+      </details>
 
       {/* URL Slug */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           URL Slug
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         <div className="flex items-center gap-3">
           <span className="text-sm text-white/30">/</span>
           <input
@@ -392,13 +405,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             </button>
           )}
         </div>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Images */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Images
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         <div className="flex gap-8">
           <div>
             <label className={labelClass}>Headshot</label>
@@ -428,13 +443,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             />
           </div>
         </div>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Current Stats */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Current Stats
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {(
             [
@@ -462,13 +479,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             </div>
           ))}
         </div>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Season History */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Season History
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         {seasonHistory.map((season, i) => (
           <div key={i} className="p-4 bg-white/[0.03] rounded-lg space-y-3">
             <div className="flex items-center justify-between">
@@ -561,13 +580,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         >
           + Add Season
         </button>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Highlights */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Highlights
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         {highlights.map((hl, i) => (
           <div key={i} className="rounded-lg border border-white/10 p-3 space-y-3">
             <div className="flex items-center justify-between gap-3">
@@ -627,13 +648,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         >
           + Add Highlight
         </button>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Social Links */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Social Links
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         {socialLinks.map((link, i) => (
           <div key={i} className="flex gap-3 items-start">
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -699,13 +722,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         >
           + Add Social Link
         </button>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Skillsets */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Player Profile / Skillsets
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         {skillsets.map((skill, i) => (
           <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
             <div className="flex items-center justify-between">
@@ -747,35 +772,65 @@ export default function PlayerForm({ player }: PlayerFormProps) {
               </div>
             </div>
             <div>
-              <label className={labelClass}>Watch Here URL <span className="text-white/20 font-normal">(optional)</span></label>
-              <input
-                className={inputClass}
-                value={skill.watchUrl ?? ""}
+              <label className={labelClass}>Video Display</label>
+              <select
+                className={selectClass}
+                value={skill.videoDisplay ?? "button"}
                 onChange={(e) => {
                   const updated = [...skillsets];
-                  updated[i] = { ...updated[i], watchUrl: e.target.value };
+                  updated[i] = { ...updated[i], videoDisplay: e.target.value as "button" | "embed" };
                   setSkillsets(updated);
                 }}
-                placeholder="YouTube, Vimeo, or Google Drive link for this skill"
-              />
+              >
+                <option className={optionClass} value="button">Button opens popup</option>
+                <option className={optionClass} value="embed">Embed in card</option>
+              </select>
             </div>
+            <MediaVideoUpload
+              item={{
+                type: "video",
+                url: skill.watchUrl ?? "",
+                title: skill.name,
+                thumbnailUrl: skill.thumbnailUrl,
+                muxPlaybackId: skill.muxPlaybackId,
+                muxAssetId: skill.muxAssetId,
+                muxUploadId: skill.muxUploadId,
+              }}
+              slug={slug}
+              inputClass={inputClass}
+              labelClass={labelClass}
+              onChange={(next) => {
+                const updated = [...skillsets];
+                updated[i] = {
+                  ...updated[i],
+                  watchUrl: next.url,
+                  thumbnailUrl: next.thumbnailUrl,
+                  muxPlaybackId: next.muxPlaybackId,
+                  muxAssetId: next.muxAssetId,
+                  muxUploadId: next.muxUploadId,
+                };
+                setSkillsets(updated);
+              }}
+            />
           </div>
         ))}
         <button
           type="button"
-          onClick={() => setSkillsets([...skillsets, { name: "", description: "", watchUrl: "" }])}
+          onClick={() => setSkillsets([...skillsets, { name: "", description: "", watchUrl: "", videoDisplay: "button" }])}
           className="text-xs text-white/40 hover:text-white/70 px-3 py-2 border border-dashed border-white/10 rounded-lg hover:border-white/30 transition-colors w-full"
         >
           + Add Skillset
         </button>
         <p className="text-[10px] text-white/20">Shows as a card grid on the profile. Leave empty to hide the section.</p>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Interests */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Outside the Rink
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         <textarea
           className={inputClass}
           rows={4}
@@ -846,13 +901,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           + Add Photo or Video
         </button>
         <p className="text-[10px] text-white/20">Shows as a separate section on the profile. Leave both blank to hide.</p>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Training */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Training
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         {trainingVideos.map((tv, i) => (
           <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
             <div className="flex items-center justify-between">
@@ -941,13 +998,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           <p className="text-[10px] text-white/25">The shared description is saved and will be used as a fallback if a slide description is blank.</p>
         )}
         <p className="text-[10px] text-white/20">Videos carousel shown first, description below. Leave both empty to hide.</p>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Academics */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Academics
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         <div>
           <label className={labelClass}>Transcript URL</label>
           <input
@@ -958,14 +1017,16 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           />
           <p className="text-[10px] text-white/20 mt-1">Shows as an &quot;Academics&quot; button in the hero. Leave blank to hide.</p>
         </div>
-      </fieldset>
+        </div>
+      </details>
 
 
       {/* Timeline */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Hockey Timeline
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         {timeline.map((entry, i) => (
           <div key={i} className="rounded-lg border border-white/10 p-3 space-y-3">
             <div className="flex items-center justify-between">
@@ -1070,13 +1131,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           + Add Timeline Entry
         </button>
         <p className="text-[10px] text-white/20">Each entry expands as a dropdown. Media carousel shown first, description below.</p>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Section Order */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Page Section Order
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         <p className="text-[10px] text-white/30 mb-3">Drag to reorder. Hero and Stats Bar are always first.</p>
         <div className="space-y-2">
           {/* Fixed */}
@@ -1124,13 +1187,15 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             );
           })}
         </div>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Settings */}
-      <fieldset className={sectionClass}>
-        <legend className="text-xs font-bold tracking-[0.15em] uppercase text-white/40 px-2">
+      <details className={sectionClass}>
+        <summary className="cursor-pointer select-none text-xs font-bold tracking-[0.15em] uppercase text-white/40 list-none">
           Settings
-        </legend>
+        </summary>
+        <div className="mt-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
             <label className={labelClass}>Custom Domain</label>
@@ -1261,7 +1326,8 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             </label>
           </div>
         </div>
-      </fieldset>
+        </div>
+      </details>
 
       {/* Error + Submit */}
       {error && (

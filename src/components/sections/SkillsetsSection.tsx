@@ -1,7 +1,77 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Player } from "@/lib/types";
+import Image from "next/image";
+import MuxPlayer from "@mux/mux-player-react";
+import { Player, Skillset } from "@/lib/types";
+import VideoModal from "@/components/VideoModal";
+import { detectVideo, getEmbedUrl, getMuxPlaybackId, getMuxThumbnailUrl } from "@/lib/video";
+
+function SkillVideo({ skill, themeColor }: { skill: Skillset; themeColor: string }) {
+  const [showModal, setShowModal] = useState(false);
+  const url = skill.watchUrl ?? "";
+  const video = detectVideo(url);
+  const embedUrl = getEmbedUrl(video);
+  const muxPlaybackId = getMuxPlaybackId(url, skill.muxPlaybackId);
+  const thumbnailUrl = skill.thumbnailUrl || (muxPlaybackId ? getMuxThumbnailUrl(muxPlaybackId) : "");
+  const display = skill.videoDisplay ?? "button";
+
+  if (!url.trim() && !muxPlaybackId) return null;
+
+  if (display === "embed") {
+    return (
+      <div className="mt-4 relative w-full aspect-video rounded-lg overflow-hidden bg-black">
+        {muxPlaybackId ? (
+          <MuxPlayer
+            playbackId={muxPlaybackId}
+            metadata={{ video_title: skill.name || "Player profile video" }}
+            className="absolute inset-0 h-full w-full"
+            style={{ height: "100%", width: "100%" }}
+          />
+        ) : embedUrl ? (
+          <iframe
+            src={embedUrl.replace("autoplay=1", "autoplay=0")}
+            className="absolute inset-0 h-full w-full"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="absolute inset-0 flex items-center justify-center bg-white/5 group"
+          >
+            {thumbnailUrl && (
+              <Image src={thumbnailUrl} alt={skill.name} fill className="object-cover" unoptimized />
+            )}
+            <span className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: themeColor }}>
+              <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
+            </span>
+          </button>
+        )}
+        <VideoModal url={url} playbackId={skill.muxPlaybackId} title={skill.name} isOpen={showModal} onClose={() => setShowModal(false)} />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setShowModal(true)}
+        className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+        style={{ backgroundColor: `${themeColor}20`, color: themeColor }}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        Watch Here
+      </button>
+      <VideoModal url={url} playbackId={skill.muxPlaybackId} title={skill.name} isOpen={showModal} onClose={() => setShowModal(false)} />
+    </>
+  );
+}
 
 export default function SkillsetsSection({ player }: { player: Player }) {
   const skills = (player.skillsets ?? []).filter((s) => s && typeof s === "object" && s.name?.trim());
@@ -42,20 +112,7 @@ export default function SkillsetsSection({ player }: { player: Player }) {
               {skill.description.trim() && (
                 <p className="text-xs text-white/50 leading-relaxed">{skill.description}</p>
               )}
-              {skill.watchUrl?.trim() && (
-                <a
-                  href={skill.watchUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                  style={{ backgroundColor: `${player.themeColor}20`, color: player.themeColor }}
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                  Watch Here
-                </a>
-              )}
+              <SkillVideo skill={skill} themeColor={player.themeColor} />
             </motion.div>
           ))}
         </div>

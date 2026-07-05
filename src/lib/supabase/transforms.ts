@@ -1,4 +1,4 @@
-import { Player, PlayerWithMeta } from "@/lib/types";
+import { Player, PlayerWithMeta, Skillset } from "@/lib/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -26,7 +26,7 @@ export interface PlayerRow {
   theme_color: string;
   highlight_reel_url: string | null;
   resume_url: string | null;
-  skillsets: { name: string; description: string }[] | null;
+  skillsets: Skillset[] | null;
   section_order: string[] | null;
   interests: string | null;
   interests_media: any;

@@ -29,6 +29,17 @@ export interface SocialLink {
   showInHero?: boolean;
 }
 
+export interface Skillset {
+  name: string;
+  description: string;
+  watchUrl?: string;
+  videoDisplay?: "button" | "embed";
+  thumbnailUrl?: string;
+  muxPlaybackId?: string;
+  muxAssetId?: string;
+  muxUploadId?: string;
+}
+
 export interface MediaItem {
   type: "photo" | "video";
   url: string;
@@ -68,7 +79,7 @@ export interface Player {
   themeColor: string;
   highlightReelUrl?: string;
   resumeUrl?: string;
-  skillsets?: { name: string; description: string; watchUrl?: string }[];
+  skillsets?: Skillset[];
   sectionOrder?: string[];
   interests?: string;
   interestsMedia?: MediaItem[];
