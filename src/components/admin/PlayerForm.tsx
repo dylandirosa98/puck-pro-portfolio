@@ -802,32 +802,124 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 <option className={optionClass} value="embed">Embed in card</option>
               </select>
             </div>
-            <MediaVideoUpload
-              item={{
-                type: "video",
-                url: skill.watchUrl ?? "",
-                title: skill.name,
-                thumbnailUrl: skill.thumbnailUrl,
-                muxPlaybackId: skill.muxPlaybackId,
-                muxAssetId: skill.muxAssetId,
-                muxUploadId: skill.muxUploadId,
-              }}
-              slug={slug}
-              inputClass={inputClass}
-              labelClass={labelClass}
-              onChange={(next) => {
-                const updated = [...skillsets];
-                updated[i] = {
-                  ...updated[i],
-                  watchUrl: next.url,
-                  thumbnailUrl: next.thumbnailUrl,
-                  muxPlaybackId: next.muxPlaybackId,
-                  muxAssetId: next.muxAssetId,
-                  muxUploadId: next.muxUploadId,
-                };
-                setSkillsets(updated);
-              }}
-            />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className={labelClass}>Videos</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = [...skillsets];
+                    const videos = updated[i].videos && updated[i].videos!.length > 0
+                      ? updated[i].videos!
+                      : updated[i].watchUrl
+                        ? [{
+                            type: "video" as const,
+                            url: updated[i].watchUrl ?? "",
+                            title: updated[i].name,
+                            thumbnailUrl: updated[i].thumbnailUrl,
+                            muxPlaybackId: updated[i].muxPlaybackId,
+                            muxAssetId: updated[i].muxAssetId,
+                            muxUploadId: updated[i].muxUploadId,
+                          }]
+                        : [];
+                    updated[i] = {
+                      ...updated[i],
+                      videos: [...videos, { type: "video", url: "", title: updated[i].name }],
+                    };
+                    setSkillsets(updated);
+                  }}
+                  className="text-xs text-white/40 hover:text-white/70"
+                >
+                  + Add Video
+                </button>
+              </div>
+              {(skill.videos && skill.videos.length > 0
+                ? skill.videos
+                : skill.watchUrl
+                  ? [{
+                      type: "video" as const,
+                      url: skill.watchUrl ?? "",
+                      title: skill.name,
+                      thumbnailUrl: skill.thumbnailUrl,
+                      muxPlaybackId: skill.muxPlaybackId,
+                      muxAssetId: skill.muxAssetId,
+                      muxUploadId: skill.muxUploadId,
+                    }]
+                  : [{ type: "video" as const, url: "", title: skill.name }]
+              ).map((video, vi) => (
+                <div key={vi} className="rounded-lg border border-white/10 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/40">Video {vi + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = [...skillsets];
+                        const videos = (updated[i].videos && updated[i].videos!.length > 0
+                          ? updated[i].videos!
+                          : updated[i].watchUrl
+                            ? [{
+                                type: "video" as const,
+                                url: updated[i].watchUrl ?? "",
+                                title: updated[i].name,
+                                thumbnailUrl: updated[i].thumbnailUrl,
+                                muxPlaybackId: updated[i].muxPlaybackId,
+                                muxAssetId: updated[i].muxAssetId,
+                                muxUploadId: updated[i].muxUploadId,
+                              }]
+                            : []
+                        ).filter((_, idx) => idx !== vi);
+                        updated[i] = {
+                          ...updated[i],
+                          videos,
+                          watchUrl: videos[0]?.url ?? "",
+                          thumbnailUrl: videos[0]?.thumbnailUrl,
+                          muxPlaybackId: videos[0]?.muxPlaybackId,
+                          muxAssetId: videos[0]?.muxAssetId,
+                          muxUploadId: videos[0]?.muxUploadId,
+                        };
+                        setSkillsets(updated);
+                      }}
+                      className="text-xs text-red-400/60 hover:text-red-400"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <MediaVideoUpload
+                    item={{ ...video, title: video.title ?? skill.name }}
+                    slug={slug}
+                    inputClass={inputClass}
+                    labelClass={labelClass}
+                    onChange={(next) => {
+                      const updated = [...skillsets];
+                      const videos = updated[i].videos && updated[i].videos!.length > 0
+                        ? [...updated[i].videos!]
+                        : updated[i].watchUrl
+                          ? [{
+                              type: "video" as const,
+                              url: updated[i].watchUrl ?? "",
+                              title: updated[i].name,
+                              thumbnailUrl: updated[i].thumbnailUrl,
+                              muxPlaybackId: updated[i].muxPlaybackId,
+                              muxAssetId: updated[i].muxAssetId,
+                              muxUploadId: updated[i].muxUploadId,
+                            }]
+                          : [{ type: "video" as const, url: "", title: updated[i].name }];
+                      videos[vi] = { ...next, title: next.title ?? updated[i].name };
+                      updated[i] = {
+                        ...updated[i],
+                        videos,
+                        watchUrl: videos[0]?.url ?? "",
+                        thumbnailUrl: videos[0]?.thumbnailUrl,
+                        muxPlaybackId: videos[0]?.muxPlaybackId,
+                        muxAssetId: videos[0]?.muxAssetId,
+                        muxUploadId: videos[0]?.muxUploadId,
+                      };
+                      setSkillsets(updated);
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         ))}
         <button

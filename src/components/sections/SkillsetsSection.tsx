@@ -8,67 +8,135 @@ import { Player, Skillset } from "@/lib/types";
 import VideoModal from "@/components/VideoModal";
 import { detectVideo, getEmbedUrl, getMuxPlaybackId, getMuxThumbnailUrl } from "@/lib/video";
 
+function getSkillVideos(skill: Skillset) {
+  if (skill.videos && skill.videos.length > 0) return skill.videos.filter((video) => video.url?.trim() || video.muxPlaybackId?.trim());
+  if (skill.watchUrl?.trim() || skill.muxPlaybackId?.trim()) {
+    return [
+      {
+        type: "video" as const,
+        url: skill.watchUrl ?? "",
+        title: skill.name,
+        thumbnailUrl: skill.thumbnailUrl,
+        muxPlaybackId: skill.muxPlaybackId,
+        muxAssetId: skill.muxAssetId,
+        muxUploadId: skill.muxUploadId,
+      },
+    ];
+  }
+  return [];
+}
+
 function SkillVideo({ skill, themeColor }: { skill: Skillset; themeColor: string }) {
   const [showModal, setShowModal] = useState(false);
-  const url = skill.watchUrl ?? "";
+  const [index, setIndex] = useState(0);
+  const videos = getSkillVideos(skill);
+  const activeVideo = videos[index] ?? videos[0];
+  const url = activeVideo?.url ?? "";
   const video = detectVideo(url);
   const embedUrl = getEmbedUrl(video);
-  const muxPlaybackId = getMuxPlaybackId(url, skill.muxPlaybackId);
-  const thumbnailUrl = skill.thumbnailUrl || (muxPlaybackId ? getMuxThumbnailUrl(muxPlaybackId) : "");
+  const muxPlaybackId = getMuxPlaybackId(url, activeVideo?.muxPlaybackId);
+  const thumbnailUrl = activeVideo?.thumbnailUrl || (muxPlaybackId ? getMuxThumbnailUrl(muxPlaybackId) : "");
   const display = skill.videoDisplay ?? "button";
 
-  if (!url.trim() && !muxPlaybackId) return null;
+  if (!activeVideo) return null;
+
+  function go(next: number) {
+    setIndex(Math.max(0, Math.min(videos.length - 1, next)));
+  }
+
+  const controls = videos.length > 1 && (
+    <div className="mt-3 flex items-center justify-center gap-3">
+      <button
+        type="button"
+        onClick={() => go(index - 1)}
+        disabled={index === 0}
+        className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M15 18l-6-6 6-6" /></svg>
+      </button>
+      <span className="text-[10px] text-white/35 tabular-nums">{index + 1} / {videos.length}</span>
+      <button
+        type="button"
+        onClick={() => go(index + 1)}
+        disabled={index === videos.length - 1}
+        className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M9 18l6-6-6-6" /></svg>
+      </button>
+    </div>
+  );
 
   if (display === "embed") {
     return (
-      <div className="mt-4 relative w-full aspect-video rounded-lg overflow-hidden bg-black">
-        {muxPlaybackId ? (
-          <MuxPlayer
-            playbackId={muxPlaybackId}
-            metadata={{ video_title: skill.name || "Player profile video" }}
-            className="absolute inset-0 h-full w-full"
-            style={{ height: "100%", width: "100%" }}
-          />
-        ) : embedUrl ? (
-          <iframe
-            src={embedUrl.replace("autoplay=1", "autoplay=0")}
-            className="absolute inset-0 h-full w-full"
-            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowModal(true)}
-            className="absolute inset-0 flex items-center justify-center bg-white/5 group"
-          >
-            {thumbnailUrl && (
-              <Image src={thumbnailUrl} alt={skill.name} fill className="object-cover" unoptimized />
-            )}
-            <span className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: themeColor }}>
-              <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
-            </span>
-          </button>
-        )}
-        <VideoModal url={url} playbackId={skill.muxPlaybackId} title={skill.name} isOpen={showModal} onClose={() => setShowModal(false)} />
+      <div className="mt-4">
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
+          {muxPlaybackId ? (
+            <MuxPlayer
+              key={muxPlaybackId}
+              playbackId={muxPlaybackId}
+              metadata={{ video_title: activeVideo.title || skill.name || "Player profile video" }}
+              className="absolute inset-0 h-full w-full"
+              style={{ height: "100%", width: "100%" }}
+            />
+          ) : embedUrl ? (
+            <iframe
+              key={url}
+              src={embedUrl.replace("autoplay=1", "autoplay=0")}
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowModal(true)}
+              className="absolute inset-0 flex items-center justify-center bg-white/5 group"
+            >
+              {thumbnailUrl && (
+                <Image src={thumbnailUrl} alt={activeVideo.title ?? skill.name} fill className="object-cover" unoptimized />
+              )}
+              <span className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: themeColor }}>
+                <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
+              </span>
+            </button>
+          )}
+        </div>
+        {controls}
+        <VideoModal url={url} playbackId={activeVideo.muxPlaybackId} title={activeVideo.title ?? skill.name} isOpen={showModal} onClose={() => setShowModal(false)} />
       </div>
     );
   }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setShowModal(true)}
-        className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-        style={{ backgroundColor: `${themeColor}20`, color: themeColor }}
-      >
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
-          <path d="M8 5v14l11-7z" />
-        </svg>
-        Watch Here
-      </button>
-      <VideoModal url={url} playbackId={skill.muxPlaybackId} title={skill.name} isOpen={showModal} onClose={() => setShowModal(false)} />
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowModal(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+          style={{ backgroundColor: `${themeColor}20`, color: themeColor }}
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          Watch Here
+        </button>
+        {videos.length > 1 && <span className="text-[10px] text-white/35 tabular-nums">{index + 1} / {videos.length}</span>}
+      </div>
+      {videos.length > 1 && (
+        <div className="mt-2 flex gap-1.5">
+          {videos.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => go(i)}
+              className="h-1.5 rounded-full transition-all"
+              style={{ width: i === index ? 18 : 6, backgroundColor: i === index ? themeColor : "rgba(255,255,255,0.2)" }}
+            />
+          ))}
+        </div>
+      )}
+      <VideoModal url={url} playbackId={activeVideo.muxPlaybackId} title={activeVideo.title ?? skill.name} isOpen={showModal} onClose={() => setShowModal(false)} />
     </>
   );
 }

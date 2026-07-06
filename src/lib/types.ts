@@ -43,6 +43,7 @@ export interface Skillset {
   muxPlaybackId?: string;
   muxAssetId?: string;
   muxUploadId?: string;
+  videos?: MediaItem[];
 }
 
 export interface MediaItem {
