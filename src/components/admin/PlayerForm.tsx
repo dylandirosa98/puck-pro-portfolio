@@ -68,6 +68,49 @@ function parseStatInput(value: string, inputType: StatField[2]) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+const formKeys = new WeakMap<object, string>();
+let formKeyCounter = 0;
+
+function formKey(item: object, prefix: string) {
+  let key = formKeys.get(item);
+  if (!key) {
+    formKeyCounter += 1;
+    key = `${prefix}-${formKeyCounter}`;
+    formKeys.set(item, key);
+  }
+  return key;
+}
+
+function moveItem<T>(items: T[], from: number, to: number) {
+  if (to < 0 || to >= items.length) return items;
+  const next = [...items];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}
+
+function ReorderControls({ index, total, onMove }: { index: number; total: number; onMove: (to: number) => void }) {
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={() => onMove(index - 1)}
+        disabled={index === 0}
+        className="px-2 py-1 rounded border border-white/10 text-[10px] text-white/40 hover:text-white/70 hover:border-white/25 disabled:opacity-25 disabled:hover:text-white/40 disabled:hover:border-white/10"
+      >
+        Up
+      </button>
+      <button
+        type="button"
+        onClick={() => onMove(index + 1)}
+        disabled={index === total - 1}
+        className="px-2 py-1 rounded border border-white/10 text-[10px] text-white/40 hover:text-white/70 hover:border-white/25 disabled:opacity-25 disabled:hover:text-white/40 disabled:hover:border-white/10"
+      >
+        Down
+      </button>
+    </div>
+  );
+}
 
 const platformOptions: SocialLink["platform"][] = [
   "instagram",
@@ -342,16 +385,19 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         </summary>
         <div className="mt-4 space-y-4">
         {media.map((item, i) => (
-          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
-            <div className="flex items-center justify-between">
+          <div key={formKey(item, "media")} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-white/40">Item {i + 1}</span>
-              <button
-                type="button"
-                onClick={() => setMedia(media.filter((_, j) => j !== i))}
-                className="text-xs text-red-400/60 hover:text-red-400"
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-2">
+                <ReorderControls index={i} total={media.length} onMove={(to) => setMedia((prev) => moveItem(prev, i, to))} />
+                <button
+                  type="button"
+                  onClick={() => setMedia((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-xs text-red-400/60 hover:text-red-400"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -606,16 +652,19 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         </summary>
         <div className="mt-4 space-y-4">
         {highlights.map((hl, i) => (
-          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-3">
+          <div key={formKey(hl, "highlight")} className="rounded-lg border border-white/10 p-3 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-white/40">Highlight {i + 1}</span>
-              <button
-                type="button"
-                onClick={() => setHighlights((prev) => prev.filter((_, j) => j !== i))}
-                className="text-xs text-red-400/60 hover:text-red-400"
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-2">
+                <ReorderControls index={i} total={highlights.length} onMove={(to) => setHighlights((prev) => moveItem(prev, i, to))} />
+                <button
+                  type="button"
+                  onClick={() => setHighlights((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-xs text-red-400/60 hover:text-red-400"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
             <div>
               <label className={labelClass}>Title</label>
@@ -748,16 +797,19 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         </summary>
         <div className="mt-4 space-y-4">
         {skillsets.map((skill, i) => (
-          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
-            <div className="flex items-center justify-between">
+          <div key={formKey(skill, "skill")} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-white/40">Skill {i + 1}</span>
-              <button
-                type="button"
-                onClick={() => setSkillsets(skillsets.filter((_, j) => j !== i))}
-                className="text-xs text-red-400/60 hover:text-red-400"
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-2">
+                <ReorderControls index={i} total={skillsets.length} onMove={(to) => setSkillsets((prev) => moveItem(prev, i, to))} />
+                <button
+                  type="button"
+                  onClick={() => setSkillsets((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-xs text-red-400/60 hover:text-red-400"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -846,43 +898,65 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                       muxUploadId: skill.muxUploadId,
                     }]
                   : [{ type: "video" as const, url: "", title: skill.name }]
-              ).map((video, vi) => (
-                <div key={vi} className="rounded-lg border border-white/10 p-3 space-y-2">
-                  <div className="flex items-center justify-between">
+              ).map((video, vi, shownVideos) => (
+                <div key={formKey(video, "skill-video")} className="rounded-lg border border-white/10 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
                     <span className="text-xs text-white/40">Video {vi + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = [...skillsets];
-                        const videos = (updated[i].videos && updated[i].videos!.length > 0
-                          ? updated[i].videos!
-                          : updated[i].watchUrl
-                            ? [{
-                                type: "video" as const,
-                                url: updated[i].watchUrl ?? "",
-                                title: updated[i].name,
-                                thumbnailUrl: updated[i].thumbnailUrl,
-                                muxPlaybackId: updated[i].muxPlaybackId,
-                                muxAssetId: updated[i].muxAssetId,
-                                muxUploadId: updated[i].muxUploadId,
-                              }]
-                            : []
-                        ).filter((_, idx) => idx !== vi);
-                        updated[i] = {
-                          ...updated[i],
-                          videos,
-                          watchUrl: videos[0]?.url ?? "",
-                          thumbnailUrl: videos[0]?.thumbnailUrl,
-                          muxPlaybackId: videos[0]?.muxPlaybackId,
-                          muxAssetId: videos[0]?.muxAssetId,
-                          muxUploadId: videos[0]?.muxUploadId,
-                        };
-                        setSkillsets(updated);
-                      }}
-                      className="text-xs text-red-400/60 hover:text-red-400"
-                    >
-                      Remove
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <ReorderControls
+                        index={vi}
+                        total={shownVideos.length}
+                        onMove={(to) => {
+                          const updated = [...skillsets];
+                          const videos = moveItem([...(updated[i].videos && updated[i].videos!.length > 0
+                            ? updated[i].videos!
+                            : shownVideos)], vi, to);
+                          updated[i] = {
+                            ...updated[i],
+                            videos,
+                            watchUrl: videos[0]?.url ?? "",
+                            thumbnailUrl: videos[0]?.thumbnailUrl,
+                            muxPlaybackId: videos[0]?.muxPlaybackId,
+                            muxAssetId: videos[0]?.muxAssetId,
+                            muxUploadId: videos[0]?.muxUploadId,
+                          };
+                          setSkillsets(updated);
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...skillsets];
+                          const videos = (updated[i].videos && updated[i].videos!.length > 0
+                            ? updated[i].videos!
+                            : updated[i].watchUrl
+                              ? [{
+                                  type: "video" as const,
+                                  url: updated[i].watchUrl ?? "",
+                                  title: updated[i].name,
+                                  thumbnailUrl: updated[i].thumbnailUrl,
+                                  muxPlaybackId: updated[i].muxPlaybackId,
+                                  muxAssetId: updated[i].muxAssetId,
+                                  muxUploadId: updated[i].muxUploadId,
+                                }]
+                              : []
+                          ).filter((_, idx) => idx !== vi);
+                          updated[i] = {
+                            ...updated[i],
+                            videos,
+                            watchUrl: videos[0]?.url ?? "",
+                            thumbnailUrl: videos[0]?.thumbnailUrl,
+                            muxPlaybackId: videos[0]?.muxPlaybackId,
+                            muxAssetId: videos[0]?.muxAssetId,
+                            muxUploadId: videos[0]?.muxUploadId,
+                          };
+                          setSkillsets(updated);
+                        }}
+                        className="text-xs text-red-400/60 hover:text-red-400"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
                   <MediaVideoUpload
                     item={{ ...video, title: video.title ?? skill.name }}
@@ -947,16 +1021,19 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           placeholder="Describe the player's interests and life outside hockey..."
         />
         {interestsMedia.map((item, i) => (
-          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
-            <div className="flex items-center justify-between">
+          <div key={formKey(item, "interest-media")} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-white/40">Item {i + 1}</span>
-              <button
-                type="button"
-                onClick={() => setInterestsMedia(interestsMedia.filter((_, j) => j !== i))}
-                className="text-xs text-red-400/60 hover:text-red-400"
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-2">
+                <ReorderControls index={i} total={interestsMedia.length} onMove={(to) => setInterestsMedia((prev) => moveItem(prev, i, to))} />
+                <button
+                  type="button"
+                  onClick={() => setInterestsMedia((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-xs text-red-400/60 hover:text-red-400"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -1019,16 +1096,19 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         </summary>
         <div className="mt-4 space-y-4">
         {trainingVideos.map((tv, i) => (
-          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
-            <div className="flex items-center justify-between">
+          <div key={formKey(tv, "training-video")} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-white/40">Video {i + 1}</span>
-              <button
-                type="button"
-                onClick={() => setTrainingVideos(trainingVideos.filter((_, j) => j !== i))}
-                className="text-xs text-red-400/60 hover:text-red-400"
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-2">
+                <ReorderControls index={i} total={trainingVideos.length} onMove={(to) => setTrainingVideos((prev) => moveItem(prev, i, to))} />
+                <button
+                  type="button"
+                  onClick={() => setTrainingVideos((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-xs text-red-400/60 hover:text-red-400"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
             <MediaVideoUpload
               item={{
@@ -1136,16 +1216,19 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         </summary>
         <div className="mt-4 space-y-4">
         {timeline.map((entry, i) => (
-          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-3">
-            <div className="flex items-center justify-between">
+          <div key={formKey(entry, "timeline")} className="rounded-lg border border-white/10 p-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-white/40">Entry {i + 1}</span>
-              <button
-                type="button"
-                onClick={() => setTimeline(timeline.filter((_, j) => j !== i))}
-                className="text-xs text-red-400/60 hover:text-red-400"
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-2">
+                <ReorderControls index={i} total={timeline.length} onMove={(to) => setTimeline((prev) => moveItem(prev, i, to))} />
+                <button
+                  type="button"
+                  onClick={() => setTimeline((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-xs text-red-400/60 hover:text-red-400"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
             <div>
               <label className={labelClass}>Title</label>
@@ -1158,16 +1241,19 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             </div>
             {/* Media items */}
             {entry.media.map((item, mi) => (
-              <div key={mi} className="rounded-lg border border-white/5 p-2.5 space-y-2">
-                <div className="flex items-center justify-between">
+              <div key={formKey(item, "timeline-media")} className="rounded-lg border border-white/5 p-2.5 space-y-2">
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-xs text-white/30">Media {mi + 1}</span>
-                  <button
-                    type="button"
-                    onClick={() => setTimeline(timeline.map((t, j) => j === i ? { ...t, media: t.media.filter((_, k) => k !== mi) } : t))}
-                    className="text-xs text-red-400/60 hover:text-red-400"
-                  >
-                    Remove
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <ReorderControls index={mi} total={entry.media.length} onMove={(to) => setTimeline((prev) => prev.map((t, j) => j === i ? { ...t, media: moveItem(t.media, mi, to) } : t))} />
+                    <button
+                      type="button"
+                      onClick={() => setTimeline((prev) => prev.map((t, j) => j === i ? { ...t, media: t.media.filter((_, k) => k !== mi) } : t))}
+                      className="text-xs text-red-400/60 hover:text-red-400"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
