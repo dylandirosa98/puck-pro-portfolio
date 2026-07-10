@@ -102,30 +102,6 @@ export interface Player {
   media?: MediaItem[];
 }
 
-export interface WizardState {
-  firstName: string;
-  lastName: string;
-  position: string;
-  number: number;
-  team: string;
-  league: string;
-  hometown: string;
-  height: string;
-  weight: string;
-  shoots: "Left" | "Right";
-  birthYear: number;
-  bio: string;
-  headshotUrl: string;
-  heroImageUrl: string;
-  themeColor: string;
-  currentStats: PlayerStats;
-  seasonHistory: SeasonStats[];
-  highlightReelUrl: string;
-  highlights: Highlight[];
-  socialLinks: SocialLink[];
-  resumeUrl: string;
-}
-
 export interface PlayerWithMeta extends Player {
   id: string;
   isPublished: boolean;

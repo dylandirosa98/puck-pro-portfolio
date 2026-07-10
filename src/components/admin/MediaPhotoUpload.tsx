@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 
 interface MediaPhotoUploadProps {
@@ -32,26 +31,27 @@ export default function MediaPhotoUpload({ slug, index, currentUrl, onUpload }: 
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(currentUrl);
   const fileRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
-
   async function handleFile(file: File) {
     setPreview(URL.createObjectURL(file));
     setUploading(true);
     try {
       const needsConversion = ["image/avif", "image/heic", "image/heif"].includes(file.type);
       const uploadBlob = needsConversion ? await toPng(file) : file;
-      const ext = needsConversion ? "png" : file.name.split(".").pop();
-      const path = `${slug || "temp"}/media-${index}.${ext}`;
+      const formData = new FormData();
+      formData.set("file", uploadBlob, needsConversion ? "media.png" : file.name);
+      formData.set("slug", slug || "temp");
+      formData.set("kind", "media");
+      formData.set("index", String(index));
 
-      await supabase.storage.from("player-images").remove([path]);
-      const { error } = await supabase.storage
-        .from("player-images")
-        .upload(path, uploadBlob, { upsert: true });
+      const response = await fetch("/api/images/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
 
-      if (error) throw new Error(error.message);
+      if (!response.ok || data.error) throw new Error(data.error || "Upload failed");
 
-      const { data: urlData } = supabase.storage.from("player-images").getPublicUrl(path);
-      const url = `${urlData.publicUrl}?t=${Date.now()}`;
+      const url = data.url as string;
       onUpload(url);
       setPreview(url);
     } catch (err) {

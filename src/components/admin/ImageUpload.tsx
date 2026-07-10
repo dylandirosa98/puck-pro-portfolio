@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 
 interface ImageUploadProps {
@@ -18,8 +17,6 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
   const [preview, setPreview] = useState(currentUrl);
   const fileRef = useRef<HTMLInputElement>(null);
   const bgRemovalRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
-
   // Preload the default model when hero/logo uploader mounts
   useEffect(() => {
     if (folder !== "hero" && folder !== "logo") return;
@@ -28,27 +25,30 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
     );
   }, [folder]);
 
+  async function uploadImage(file: Blob, kind: "headshot" | "hero" | "logo", filename: string) {
+    const formData = new FormData();
+    formData.set("file", file, filename);
+    formData.set("slug", slug || "temp");
+    formData.set("kind", kind);
+
+    const response = await fetch("/api/images/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error || "Upload failed");
+    }
+
+    return data.url as string;
+  }
+
   async function uploadDirect(file: File, heroPath?: boolean) {
     const needsConversion = ["image/avif", "image/heic", "image/heif"].includes(file.type);
     const uploadBlob = needsConversion ? await toPng(file) : file;
-    const ext = needsConversion ? "png" : file.name.split(".").pop();
-    const path = heroPath
-      ? `${slug || "temp"}/hero.${ext}`
-      : `${slug || "temp"}/${folder}.${ext}`;
-
-    await supabase.storage.from("player-images").remove([path]);
-
-    const { error } = await supabase.storage
-      .from("player-images")
-      .upload(path, uploadBlob, { upsert: true });
-
-    if (error) throw new Error(error.message);
-
-    const { data: urlData } = supabase.storage
-      .from("player-images")
-      .getPublicUrl(path);
-
-    return `${urlData.publicUrl}?t=${Date.now()}`;
+    const filename = needsConversion ? `${folder}.png` : file.name;
+    return uploadImage(uploadBlob, heroPath ? "hero" : folder, filename);
   }
 
   async function toPng(file: File): Promise<Blob> {
@@ -84,20 +84,7 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
       },
     });
 
-    const path = `${slug || "temp"}/${folder === "logo" ? "logo" : "hero"}.png`;
-    await supabase.storage.from("player-images").remove([path]);
-
-    const { error } = await supabase.storage
-      .from("player-images")
-      .upload(path, resultBlob, { contentType: "image/png", upsert: true });
-
-    if (error) throw new Error(error.message);
-
-    const { data: urlData } = supabase.storage
-      .from("player-images")
-      .getPublicUrl(path);
-
-    return `${urlData.publicUrl}?t=${Date.now()}`;
+    return uploadImage(resultBlob, folder === "logo" ? "logo" : "hero", `${folder === "logo" ? "logo" : "hero"}.png`);
   }
 
   async function handleFile(file: File, removeBg: boolean) {

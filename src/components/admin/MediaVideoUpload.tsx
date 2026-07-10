@@ -11,6 +11,7 @@ interface MediaVideoUploadProps {
   inputClass: string;
   labelClass: string;
   onChange: (item: MediaItem) => void;
+  allowAudioChoice?: boolean;
 }
 
 type FFmpegInstance = {
@@ -220,7 +221,7 @@ async function waitForMuxPlayback(uploadId: string): Promise<UploadStatusRespons
   throw new Error("Mux is still processing this video. Try again in a minute.");
 }
 
-export default function MediaVideoUpload({ item, slug, inputClass, labelClass, onChange }: MediaVideoUploadProps) {
+export default function MediaVideoUpload({ item, slug, inputClass, labelClass, onChange, allowAudioChoice = true }: MediaVideoUploadProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -230,9 +231,11 @@ export default function MediaVideoUpload({ item, slug, inputClass, labelClass, o
   const thumbnailUrl = item.thumbnailUrl || (playbackId ? getMuxThumbnailUrl(playbackId) : "");
 
   async function handleFile(file: File) {
-    const includeAudio = window.confirm(
-      "Include audio in this Mux upload?\n\nOK = keep original audio\nCancel = permanently remove audio before upload"
-    );
+    const includeAudio = allowAudioChoice
+      ? window.confirm(
+          "Include audio in this Mux upload?\n\nOK = keep original audio\nCancel = permanently remove audio before upload"
+        )
+      : true;
 
     setUploading(true);
     setProgress(0);
@@ -329,7 +332,9 @@ export default function MediaVideoUpload({ item, slug, inputClass, labelClass, o
           }}
           className="hidden"
         />
-        <p className="mt-1 text-[10px] text-white/25">After choosing a file, you can keep or permanently remove audio before it uploads to Mux.</p>
+        {allowAudioChoice && (
+          <p className="mt-1 text-[10px] text-white/25">After choosing a file, you can keep or permanently remove audio before it uploads to Mux.</p>
+        )}
       </div>
 
       <div>
