@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { ImagePlus, LoaderCircle, Upload } from "lucide-react";
 
 interface ImageUploadProps {
   slug: string;
@@ -10,14 +11,21 @@ interface ImageUploadProps {
   onUpload: (url: string) => void;
 }
 
+const acceptedImages = "image/png,image/jpeg,image/webp,image/avif,image/heic,image/heif";
+
 export default function ImageUpload({ slug, folder, currentUrl, onUpload }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
   const [preview, setPreview] = useState(currentUrl);
   const fileRef = useRef<HTMLInputElement>(null);
   const bgRemovalRef = useRef<HTMLInputElement>(null);
-  // Preload the default model when hero/logo uploader mounts
+
+  useEffect(() => {
+    setPreview(currentUrl);
+  }, [currentUrl]);
+
   useEffect(() => {
     if (folder !== "hero" && folder !== "logo") return;
     import("@imgly/background-removal").then(({ preload }) =>
@@ -53,18 +61,21 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
 
   async function toPng(file: File): Promise<Blob> {
     return new Promise((resolve, reject) => {
-      const img = new window.Image();
+      const image = new window.Image();
       const url = URL.createObjectURL(file);
-      img.onload = () => {
+      image.onload = () => {
         const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        canvas.getContext("2d")!.drawImage(img, 0, 0);
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        canvas.getContext("2d")?.drawImage(image, 0, 0);
         URL.revokeObjectURL(url);
-        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Canvas conversion failed")), "image/png");
+        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Image conversion failed")), "image/png");
       };
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Failed to load image")); };
-      img.src = url;
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("That image could not be opened"));
+      };
+      image.src = url;
     });
   }
 
@@ -76,7 +87,7 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
       progress: (key, current, total) => {
         if (key.includes("fetch") && total > 0) {
           setProgress(Math.round((current / total) * 100));
-          setStatus("Downloading model");
+          setStatus("Preparing background remover");
         } else if (key.includes("compute")) {
           setProgress(0);
           setStatus("Removing background");
@@ -87,133 +98,142 @@ export default function ImageUpload({ slug, folder, currentUrl, onUpload }: Imag
     return uploadImage(resultBlob, folder === "logo" ? "logo" : "hero", `${folder === "logo" ? "logo" : "hero"}.png`);
   }
 
-  async function handleFile(file: File, removeBg: boolean) {
-    setPreview(URL.createObjectURL(file));
+  async function handleFile(file: File, removeBackground: boolean) {
+    const localPreview = URL.createObjectURL(file);
+    setPreview(localPreview);
     setUploading(true);
+    setError("");
     setProgress(0);
 
     try {
       let url: string;
-      if (removeBg) {
-        setStatus("Downloading model");
+      if (removeBackground) {
+        setStatus("Preparing background remover");
         url = await uploadWithBgRemoval(file);
       } else {
-        setStatus("Uploading");
+        setStatus("Uploading photo");
         url = await uploadDirect(file, folder === "hero");
       }
       onUpload(url);
       setPreview(url);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Upload failed";
-      alert(msg);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Upload failed. Try another photo.");
     } finally {
+      URL.revokeObjectURL(localPreview);
       setUploading(false);
       setStatus("");
       setProgress(0);
     }
   }
 
-  if (folder === "hero" || folder === "logo") {
-    return (
-      <div className="space-y-2">
-        {/* Preview */}
-        <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-white/5 border border-white/10">
-          {preview && !preview.includes("placeholder") ? (
-            <Image src={preview} alt="hero" fill className="object-cover" unoptimized />
+  function selectFile(removeBackground: boolean) {
+    setError("");
+    if (removeBackground) {
+      bgRemovalRef.current?.click();
+    } else {
+      fileRef.current?.click();
+    }
+  }
+
+  const hasImage = !!preview && !preview.includes("placeholder");
+  const isCutout = folder === "hero" || folder === "logo";
+
+  return (
+    <div aria-busy={uploading}>
+      <div className="flex items-start gap-3">
+        <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
+          {hasImage ? (
+            <Image
+              src={preview}
+              alt={folder === "logo" ? "Team logo preview" : "Player photo preview"}
+              fill
+              className={folder === "headshot" ? "object-cover" : "object-contain"}
+              unoptimized
+            />
           ) : (
-            <div className="flex items-center justify-center h-full text-white/30 text-xs text-center px-2">
-              No image
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-white/30">
+              <ImagePlus className="h-5 w-5" />
+              <span className="text-xs">No photo</span>
             </div>
           )}
+
           {uploading && (
-            <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-1.5 px-2">
-              <div className="w-full bg-white/10 rounded-full h-1">
-                {progress > 0 && (
-                  <div
-                    className="bg-white h-1 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  />
-                )}
-              </div>
-              <span className="text-[10px] text-white/80 text-center">
-                {status}{progress > 0 ? ` ${progress}%` : "..."}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/80 px-2">
+              <LoaderCircle className="h-5 w-5 animate-spin text-white" />
+              <span className="text-center text-[10px] leading-4 text-white/75">
+                {status}{progress > 0 ? ` ${progress}%` : ""}
               </span>
+              {progress > 0 && (
+                <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
+                  <div className="h-full rounded-full bg-white transition-[width]" style={{ width: `${progress}%` }} />
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Two upload buttons */}
-        {!uploading && (
-          <div className="flex flex-col gap-1.5">
+        <div className="min-w-0 flex-1 space-y-2">
+          {isCutout ? (
+            <>
+              <button
+                type="button"
+                onClick={() => selectFile(true)}
+                disabled={uploading}
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-white px-3 text-sm font-bold text-black transition hover:bg-white/85 disabled:opacity-50"
+              >
+                Upload and remove background
+              </button>
+              <button
+                type="button"
+                onClick={() => selectFile(false)}
+                disabled={uploading}
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-sm font-semibold text-white/60 transition hover:border-white/25 hover:text-white disabled:opacity-50"
+              >
+                <Upload className="h-4 w-4" />
+                Upload original
+              </button>
+            </>
+          ) : (
             <button
               type="button"
-              onClick={() => bgRemovalRef.current?.click()}
-              className="text-[11px] px-2.5 py-1.5 rounded bg-white/10 hover:bg-white/15 text-white transition-colors text-left"
+              onClick={() => selectFile(false)}
+              disabled={uploading}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-white px-3 text-sm font-bold text-black transition hover:bg-white/85 disabled:opacity-50"
             >
-              ✦ Upload + Remove BG
+              <Upload className="h-4 w-4" />
+              {hasImage ? "Replace photo" : "Upload photo"}
             </button>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="text-[11px] px-2.5 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors text-left"
-            >
-              ↑ Upload pre-cut image
-            </button>
-          </div>
-        )}
-
-        <input
-          ref={bgRemovalRef}
-          type="file"
-          accept="image/*"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, true); }}
-          className="hidden"
-        />
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, false); }}
-          className="hidden"
-        />
+          )}
+          <p className="text-xs leading-4 text-white/30">{isCutout ? "The background is removed automatically." : "JPG, PNG, WEBP, HEIC, or AVIF"}</p>
+        </div>
       </div>
-    );
-  }
 
-  // Headshot — simple direct upload
-  return (
-    <div>
-      <div
-        onClick={() => !uploading && fileRef.current?.click()}
-        className={`relative w-32 h-32 rounded-lg overflow-hidden bg-white/5 border border-white/10 transition-colors group ${
-          uploading ? "cursor-wait" : "cursor-pointer hover:border-white/30"
-        }`}
-      >
-        {preview && !preview.includes("placeholder") ? (
-          <Image src={preview} alt="headshot" fill className="object-cover" unoptimized />
-        ) : (
-          <div className="flex items-center justify-center h-full text-white/30 text-xs">
-            Click to upload
-          </div>
-        )}
-        {uploading && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-xs text-white">{status}...</span>
-          </div>
-        )}
-        {!uploading && (
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-            <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-              {preview && !preview.includes("placeholder") ? "Replace" : "Upload"}
-            </span>
-          </div>
-        )}
-      </div>
+      {error && (
+        <p role="alert" className="mt-3 rounded-lg border border-red-400/20 bg-red-400/[0.08] p-3 text-xs leading-5 text-red-200">
+          {error}
+        </p>
+      )}
+
+      <input
+        ref={bgRemovalRef}
+        type="file"
+        accept={acceptedImages}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) handleFile(file, true);
+          event.target.value = "";
+        }}
+        className="hidden"
+      />
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, false); }}
+        accept={acceptedImages}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) handleFile(file, false);
+          event.target.value = "";
+        }}
         className="hidden"
       />
     </div>

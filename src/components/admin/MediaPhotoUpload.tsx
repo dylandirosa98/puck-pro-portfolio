@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { ImagePlus, LoaderCircle } from "lucide-react";
 
 interface MediaPhotoUploadProps {
   slug: string;
@@ -12,28 +13,40 @@ interface MediaPhotoUploadProps {
 
 async function toPng(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    const img = new window.Image();
+    const image = new window.Image();
     const url = URL.createObjectURL(file);
-    img.onload = () => {
+    image.onload = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext("2d")!.drawImage(img, 0, 0);
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      canvas.getContext("2d")?.drawImage(image, 0, 0);
       URL.revokeObjectURL(url);
-      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Conversion failed")), "image/png");
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Image conversion failed")), "image/png");
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Failed to load image")); };
-    img.src = url;
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("That image could not be opened"));
+    };
+    image.src = url;
   });
 }
 
 export default function MediaPhotoUpload({ slug, index, currentUrl, onUpload }: MediaPhotoUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(currentUrl);
+  const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setPreview(currentUrl);
+  }, [currentUrl]);
+
   async function handleFile(file: File) {
-    setPreview(URL.createObjectURL(file));
+    const localPreview = URL.createObjectURL(file);
+    setPreview(localPreview);
     setUploading(true);
+    setError("");
+
     try {
       const needsConversion = ["image/avif", "image/heic", "image/heif"].includes(file.type);
       const uploadBlob = needsConversion ? await toPng(file) : file;
@@ -54,46 +67,57 @@ export default function MediaPhotoUpload({ slug, index, currentUrl, onUpload }: 
       const url = data.url as string;
       onUpload(url);
       setPreview(url);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Upload failed");
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Upload failed. Try another photo.");
     } finally {
+      URL.revokeObjectURL(localPreview);
       setUploading(false);
     }
   }
 
   return (
-    <div>
-      <div
+    <div aria-busy={uploading}>
+      <button
+        type="button"
         onClick={() => !uploading && fileRef.current?.click()}
-        className={`relative w-full aspect-video rounded-lg overflow-hidden bg-white/5 border border-white/10 transition-colors group ${
-          uploading ? "cursor-wait" : "cursor-pointer hover:border-white/30"
-        }`}
+        disabled={uploading}
+        className="group relative aspect-video w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.04] text-white transition hover:border-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:cursor-wait"
       >
         {preview ? (
-          <Image src={preview} alt="media" fill className="object-cover" unoptimized />
+          <Image src={preview} alt="Media photo preview" fill className="object-cover" unoptimized />
         ) : (
-          <div className="flex items-center justify-center h-full text-white/30 text-xs">
-            Click to upload photo
-          </div>
+          <span className="flex h-full flex-col items-center justify-center gap-2 text-white/35">
+            <ImagePlus className="h-6 w-6" />
+            <span className="text-sm font-semibold">Add photo</span>
+          </span>
         )}
-        {uploading && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-xs text-white">Uploading...</span>
-          </div>
-        )}
-        {!uploading && (
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-            <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-              {preview ? "Replace" : "Upload"}
-            </span>
-          </div>
-        )}
-      </div>
+        {uploading ? (
+          <span className="absolute inset-0 flex items-center justify-center gap-2 bg-black/75 text-sm font-semibold">
+            <LoaderCircle className="h-5 w-5 animate-spin" />
+            Uploading
+          </span>
+        ) : preview ? (
+          <span className="absolute inset-x-0 bottom-0 bg-black/70 px-3 py-2 text-left text-xs font-semibold opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+            Replace photo
+          </span>
+        ) : null}
+      </button>
+
+      {error && (
+        <p role="alert" className="mt-3 rounded-lg border border-red-400/20 bg-red-400/[0.08] p-3 text-xs leading-5 text-red-200">
+          {error}
+        </p>
+      )}
+
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
+        accept="image/png,image/jpeg,image/webp,image/avif,image/heic,image/heif"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) handleFile(file);
+          event.target.value = "";
+        }}
         className="hidden"
       />
     </div>

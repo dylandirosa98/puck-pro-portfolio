@@ -60,6 +60,9 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
     { label: "Weight", value: player.weight },
   ].filter((item) => item.value);
 
+  const hasStats = Object.values(player.currentStats ?? {}).some((value) => Number(value) !== 0);
+  const showStats = hasStats && (player.showStatsBar ?? true);
+
   function renderSection(key: string) {
     switch (key) {
       case "about":
@@ -106,7 +109,7 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
         </div>
       )}
 
-      {(player.showStatsBar ?? true) && <StatsBar stats={player.currentStats} position={player.position} />}
+      {showStats && <StatsBar stats={player.currentStats} position={player.position} />}
       {order.map(renderSection)}
       <SocialFooter socialLinks={player.socialLinks} lightMode={player.lightMode} />
     </main>
