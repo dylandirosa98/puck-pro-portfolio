@@ -784,6 +784,11 @@ function PhotosStep({ draft, update }: { draft: Player; update: (updates: Partia
           <div className="mt-3">
             <ImageUpload slug={uploadSlug} folder="headshot" currentUrl={draft.headshotUrl} onUpload={(url) => update({ headshotUrl: url })} />
           </div>
+          <div className="mt-4">
+            <Field label="Bio">
+              <textarea className={inputClass} rows={5} value={draft.bio} onChange={(e) => update({ bio: e.target.value })} />
+            </Field>
+          </div>
         </div>
         <div className="py-5">
           <h3 className="text-sm font-semibold text-white/80">Main player photo</h3>
@@ -985,7 +990,7 @@ function ContentStep({ draft, update }: { draft: Player; update: (updates: Parti
 
   return (
     <div>
-      <SectionHeader title="Build the story" body="Start with the bio, then add only the sections that help tell the player\'s story." />
+      <SectionHeader title="Build the story" body="Start with the skill cards and add only the sections that help tell the player\'s story." />
       <div className="scrollbar-hide -mx-1 mb-5 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Portfolio content sections">
         {contentTabs.map((tab) => (
           <button
@@ -1009,7 +1014,6 @@ function ContentStep({ draft, update }: { draft: Player; update: (updates: Parti
           videoIndex={indexes.skillVideos}
           onSkillIndex={(value) => setIndex("skills", value)}
           onVideoIndex={(value) => setIndex("skillVideos", value)}
-          update={update}
           updateAndClamp={updateAndClamp}
         />
       )}
@@ -1173,7 +1177,6 @@ function SkillsContentEditor({
   videoIndex,
   onSkillIndex,
   onVideoIndex,
-  update,
   updateAndClamp,
 }: {
   draft: Player;
@@ -1182,7 +1185,6 @@ function SkillsContentEditor({
   videoIndex: number;
   onSkillIndex: (index: number) => void;
   onVideoIndex: (index: number) => void;
-  update: (updates: Partial<Player>) => void;
   updateAndClamp: (updates: Partial<Player>, key: keyof ContentIndexes, nextCount: number) => void;
 }) {
   const skills = draft.skillsets ?? [];
@@ -1195,7 +1197,6 @@ function SkillsContentEditor({
 
   return (
     <div className="space-y-4">
-      <Field label="Bio"><textarea className={inputClass} rows={5} value={draft.bio} onChange={(e) => update({ bio: e.target.value })} /></Field>
       <CarouselEditor
         title="Skill Cards"
         count={skills.length}
