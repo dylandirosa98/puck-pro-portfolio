@@ -3,10 +3,11 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { PlayerStats } from "@/lib/types";
+import { isGoalie } from "@/lib/hockey";
 
 interface StatsBarProps {
   stats: PlayerStats;
-  position?: string;
+  position: string;
 }
 
 type StatItem = {
@@ -66,7 +67,7 @@ const goalieStatItems: StatItem[] = [
 ];
 
 export default function StatsBar({ stats, position }: StatsBarProps) {
-  const statItems = position === "Goalie" ? goalieStatItems : playerStatItems;
+  const statItems = isGoalie(position) ? goalieStatItems : playerStatItems;
 
   return (
     <section className="px-5 pt-6 pb-2 lg:max-w-4xl lg:mx-auto lg:pt-10 lg:pb-4">

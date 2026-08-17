@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AdminNav() {
@@ -17,15 +18,15 @@ export default function AdminNav() {
     <nav className="border-b border-white/10 bg-[#0a0a0a]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <a href="/admin" className="text-sm font-bold text-white">
+          <Link href="/admin" className="text-sm font-bold text-white">
             Puck Pro Admin
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/players/new"
             className="text-xs text-white/40 hover:text-white/70 transition-colors"
           >
             + New Player
-          </a>
+          </Link>
         </div>
         <button
           onClick={handleSignOut}

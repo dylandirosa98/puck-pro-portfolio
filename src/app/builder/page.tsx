@@ -36,24 +36,17 @@ import PlayerTemplate from "@/components/PlayerTemplate";
 import ImageUpload from "@/components/admin/ImageUpload";
 import MediaPhotoUpload from "@/components/admin/MediaPhotoUpload";
 import MediaVideoUpload from "@/components/admin/MediaVideoUpload";
-import type { Highlight, MediaItem, Player, PlayerStats, Skillset, SocialLink } from "@/lib/types";
+import type { Highlight, MediaItem, Player, Skillset, SocialLink } from "@/lib/types";
+import {
+  createEmptyStats,
+  currentSeasonLabel,
+  isGoalie,
+  seasonOptions,
+  statFieldsForPosition,
+} from "@/lib/hockey";
 
 const STORAGE_KEY = "puckpro_builder_draft_v2";
 const ACTIVE_STEP_KEY = "puckpro_builder_active_step_v1";
-
-const emptyStats: PlayerStats = {
-  gamesPlayed: 0,
-  goals: 0,
-  assists: 0,
-  points: 0,
-  plusMinus: 0,
-  pim: 0,
-  wins: 0,
-  losses: 0,
-  goalsAgainstAverage: 0,
-  savePercentage: 0,
-  shutouts: 0,
-};
 
 const defaultDraft: Player = {
   slug: "preview",
@@ -72,7 +65,7 @@ const defaultDraft: Player = {
   headshotUrl: "/images/headshot-placeholder.svg",
   heroImageUrl: "/images/hero-placeholder.svg",
   teamLogoUrl: "",
-  currentStats: { ...emptyStats },
+  currentStats: createEmptyStats(),
   seasonHistory: [],
   highlights: [],
   socialLinks: [],
@@ -136,24 +129,6 @@ const platformLabels: Record<SocialLink["platform"], string> = {
   neutralzone: "Neutral Zone",
 };
 
-const skaterStats: [keyof PlayerStats, string][] = [
-  ["gamesPlayed", "GP"],
-  ["goals", "G"],
-  ["assists", "A"],
-  ["points", "PTS"],
-  ["plusMinus", "+/-"],
-  ["pim", "PIM"],
-];
-
-const goalieStats: [keyof PlayerStats, string][] = [
-  ["gamesPlayed", "GP"],
-  ["wins", "W"],
-  ["losses", "L"],
-  ["goalsAgainstAverage", "GAA"],
-  ["savePercentage", "SV%"],
-  ["shutouts", "SO"],
-];
-
 const inputClass = "min-h-12 w-full rounded-lg border border-white/10 bg-[#151515] px-3.5 py-3 text-base text-white outline-none transition placeholder:text-white/25 focus:border-red-400 focus:ring-2 focus:ring-red-500/15";
 const labelClass = "mb-2 block text-xs font-medium text-white/60";
 const buttonClass = "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-sm font-semibold text-white/65 transition hover:border-white/25 hover:bg-white/[0.05] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:pointer-events-none disabled:opacity-30";
@@ -163,7 +138,7 @@ function mergeDraft(value: unknown): Player {
   return {
     ...defaultDraft,
     ...(value as Partial<Player>),
-    currentStats: { ...emptyStats, ...((value as Partial<Player>).currentStats ?? {}) },
+    currentStats: { ...createEmptyStats(), ...((value as Partial<Player>).currentStats ?? {}) },
     seasonHistory: (value as Partial<Player>).seasonHistory ?? [],
     highlights: (value as Partial<Player>).highlights ?? [],
     socialLinks: (value as Partial<Player>).socialLinks ?? [],
@@ -718,7 +693,7 @@ function InfoStep({ draft, update }: { draft: Player; update: (updates: Partial<
             />
           </Field>
           <fieldset>
-            <legend className={labelClass}>{draft.position === "Goalie" ? "Catches" : "Shoots"}</legend>
+            <legend className={labelClass}>{isGoalie(draft.position) ? "Catches" : "Shoots"}</legend>
             <div className="grid grid-cols-2 gap-2">
               {(["Left", "Right"] as const).map((side) => (
                 <button
@@ -918,19 +893,35 @@ function StyleStep({ draft, update }: { draft: Player; update: (updates: Partial
 }
 
 function StatsStep({ draft, update }: { draft: Player; update: (updates: Partial<Player>) => void }) {
-  const fields = draft.position === "Goalie" ? goalieStats : skaterStats;
+  const [seasonIndex, setSeasonIndex] = useState(0);
+  const fields = statFieldsForPosition(draft.position);
+  const seasons = draft.seasonHistory ?? [];
+  const safeSeasonIndex = Math.min(seasonIndex, Math.max(0, seasons.length - 1));
+  const season = seasons[safeSeasonIndex];
+  const suggestedSeason = currentSeasonLabel();
+  const availableSeasons = seasonOptions(seasons.map((item) => item.season));
+
+  function setSeasons(next: Player["seasonHistory"]) {
+    update({ seasonHistory: next });
+    setSeasonIndex(Math.min(safeSeasonIndex, Math.max(0, next.length - 1)));
+  }
+
+  function updateSeason(updates: Partial<Player["seasonHistory"][number]>) {
+    setSeasons(seasons.map((item, index) => index === safeSeasonIndex ? { ...item, ...updates } : item));
+  }
 
   return (
     <div>
-      <SectionHeader title="Current season stats" body="Add what you have now or skip this step and return later." />
+      <SectionHeader title="Player stats" body="Add current numbers and season-by-season history. Goalie profiles automatically use goalie stats." />
+      <h3 className="mb-3 text-sm font-bold text-white/80">Current stats bar</h3>
       <div className="grid grid-cols-2 gap-3">
-        {fields.map(([key, label]) => (
+        {fields.map(([key, label, inputType]) => (
           <Field key={key} label={label}>
             <input
               className={inputClass}
               type="number"
-              inputMode={key === "savePercentage" || key === "goalsAgainstAverage" ? "decimal" : "numeric"}
-              step={key === "savePercentage" ? "0.001" : key === "goalsAgainstAverage" ? "0.01" : "1"}
+              inputMode={inputType === "decimal" ? "decimal" : "numeric"}
+              step={key === "savePercentage" ? "0.001" : inputType === "decimal" ? "0.01" : "1"}
               value={draft.currentStats[key] || ""}
               onChange={(event) => update({
                 currentStats: {
@@ -950,6 +941,79 @@ function StatsStep({ draft, update }: { draft: Player; update: (updates: Partial
           label="Show stats on the portfolio"
           description="Turn this off until the numbers are ready."
         />
+      </div>
+      <div className="mt-7 border-t border-white/10 pt-6">
+        <datalist id="builder-season-options">
+          {availableSeasons.map((option) => <option key={option} value={option} />)}
+        </datalist>
+        <CarouselEditor
+          title="Season History"
+          count={seasons.length}
+          index={safeSeasonIndex}
+          addLabel="Add Season"
+          emptyText="Add the first season to your career history"
+          onIndex={(index) => setSeasonIndex(Math.max(0, Math.min(seasons.length - 1, index)))}
+          onAdd={() => {
+            update({
+              seasonHistory: [...seasons, {
+                season: suggestedSeason,
+                team: draft.team,
+                league: draft.league,
+                stats: createEmptyStats(),
+              }],
+            });
+            setSeasonIndex(seasons.length);
+          }}
+          onRemove={() => setSeasons(seasons.filter((_, index) => index !== safeSeasonIndex))}
+          onMove={(direction) => {
+            const nextIndex = safeSeasonIndex + direction;
+            setSeasons(moveItem(seasons, safeSeasonIndex, nextIndex));
+            setSeasonIndex(nextIndex);
+          }}
+        >
+          {season && (
+            <div className="space-y-4">
+              <Field label="Season">
+                <input
+                  className={inputClass}
+                  list="builder-season-options"
+                  value={season.season}
+                  onChange={(event) => updateSeason({ season: event.target.value })}
+                  placeholder={suggestedSeason}
+                />
+              </Field>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Team">
+                  <input className={inputClass} value={season.team} onChange={(event) => updateSeason({ team: event.target.value })} />
+                </Field>
+                <Field label="League">
+                  <input className={inputClass} value={season.league} onChange={(event) => updateSeason({ league: event.target.value })} />
+                </Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {fields.map(([key, label, inputType]) => (
+                  <Field key={key} label={label}>
+                    <input
+                      className={inputClass}
+                      type="number"
+                      inputMode={inputType === "decimal" ? "decimal" : "numeric"}
+                      step={key === "savePercentage" ? "0.001" : inputType === "decimal" ? "0.01" : "1"}
+                      value={season.stats[key] || ""}
+                      onChange={(event) => updateSeason({
+                        stats: {
+                          ...season.stats,
+                          [key]: event.target.value === "" ? 0 : Number(event.target.value),
+                        },
+                      })}
+                      placeholder="0"
+                    />
+                  </Field>
+                ))}
+              </div>
+            </div>
+          )}
+        </CarouselEditor>
+        <p className="mt-3 text-xs leading-5 text-white/35">Choose a suggested season or type any custom season label.</p>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import CareerStats from "./sections/CareerStats";
 import HighlightsSection from "./sections/HighlightsSection";
 import TimelineSection from "./sections/TimelineSection";
 import SocialFooter from "./sections/SocialFooter";
+import { hasStatsForPosition, isGoalie } from "@/lib/hockey";
 
 const DEFAULT_ORDER = ["about", "skillsets", "interests", "training", "timeline", "career-stats", "highlights"];
 
@@ -55,12 +56,12 @@ export default function PlayerTemplate({ player }: PlayerTemplateProps) {
 
   const infoItems = [
     { label: "Position", value: player.position },
-    { label: player.position === "Goalie" ? "Catches" : "Shoots", value: player.shoots },
+    { label: isGoalie(player.position) ? "Catches" : "Shoots", value: player.shoots },
     { label: "Height", value: player.height },
     { label: "Weight", value: player.weight },
   ].filter((item) => item.value);
 
-  const hasStats = Object.values(player.currentStats ?? {}).some((value) => Number(value) !== 0);
+  const hasStats = hasStatsForPosition(player.currentStats, player.position);
   const showStats = hasStats && (player.showStatsBar ?? true);
 
   function renderSection(key: string) {

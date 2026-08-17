@@ -1,5 +1,5 @@
 import { removeBackground } from "@imgly/background-removal-node";
-import { writeFileSync, readFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { resolve } from "path";
 
 const inputPath = resolve("public/images/hero-original.png");

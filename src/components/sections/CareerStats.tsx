@@ -2,10 +2,11 @@
 
 import { motion } from "framer-motion";
 import { PlayerStats, SeasonStats } from "@/lib/types";
+import { isGoalie } from "@/lib/hockey";
 
 interface CareerStatsProps {
   seasons: SeasonStats[];
-  position?: string;
+  position: string;
 }
 
 type StatItem = {
@@ -41,8 +42,9 @@ function formatStat(stats: PlayerStats, item: StatItem) {
 }
 
 export default function CareerStats({ seasons, position }: CareerStatsProps) {
-  const statItems = position === "Goalie" ? goalieStatItems : playerStatItems;
-  const featuredStat = position === "Goalie" ? goalieStatItems[3] : playerStatItems[3];
+  const goalie = isGoalie(position);
+  const statItems = goalie ? goalieStatItems : playerStatItems;
+  const featuredStat = goalie ? goalieStatItems[3] : playerStatItems[3];
 
   return (
     <section className="px-5 py-12 lg:max-w-4xl lg:mx-auto lg:py-16">
@@ -65,7 +67,7 @@ export default function CareerStats({ seasons, position }: CareerStatsProps) {
         <div className="space-y-3 lg:hidden">
           {seasons.map((season, i) => (
             <motion.div
-              key={season.season}
+              key={`${season.season}-${season.team}-${season.league}-${i}`}
               className="bg-white/5 rounded-xl p-4"
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -125,7 +127,7 @@ export default function CareerStats({ seasons, position }: CareerStatsProps) {
               <tbody>
                 {seasons.map((season, i) => (
                   <motion.tr
-                    key={season.season}
+                    key={`${season.season}-${season.team}-${season.league}-${i}`}
                     className="border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors"
                     initial={{ opacity: 0, x: -10 }}
                     whileInView={{ opacity: 1, x: 0 }}

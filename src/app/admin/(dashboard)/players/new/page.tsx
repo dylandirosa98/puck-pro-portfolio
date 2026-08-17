@@ -1,5 +1,7 @@
 import PlayerForm from "@/components/admin/PlayerForm";
 
+export const dynamic = "force-dynamic";
+
 export default function NewPlayerPage() {
   return (
     <div>

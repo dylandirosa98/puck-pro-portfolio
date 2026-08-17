@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPlayer, updatePlayer } from "@/lib/actions/player-actions";
 import ImageUpload from "./ImageUpload";
@@ -8,6 +8,14 @@ import PdfUpload from "./PdfUpload";
 import MediaPhotoUpload from "./MediaPhotoUpload";
 import MediaVideoUpload from "./MediaVideoUpload";
 import type { PlayerWithMeta, PlayerStats, SeasonStats, Highlight, SocialLink, MediaItem, Skillset } from "@/lib/types";
+import {
+  createEmptyStats,
+  currentSeasonLabel,
+  isGoalie,
+  seasonOptions,
+  statFieldsForPosition,
+  type StatField,
+} from "@/lib/hockey";
 
 interface PlayerFormProps {
   player?: PlayerWithMeta;
@@ -20,63 +28,26 @@ function slugify(firstName: string, lastName: string): string {
     .replace(/-+/g, "-");
 }
 
-const emptyStats: PlayerStats = {
-  gamesPlayed: 0,
-  goals: 0,
-  assists: 0,
-  points: 0,
-  plusMinus: 0,
-  pim: 0,
-  wins: 0,
-  losses: 0,
-  goalsAgainstAverage: 0,
-  savePercentage: 0,
-  shutouts: 0,
-};
-
-const emptySeason: SeasonStats = {
-  season: "",
-  team: "",
-  league: "",
-  stats: { ...emptyStats },
-};
-
 const emptyHighlight: Highlight = { title: "", url: "" };
-
-const playerStatFields = [
-  ["gamesPlayed", "GP", "number"],
-  ["goals", "G", "number"],
-  ["assists", "A", "number"],
-  ["points", "PTS", "number"],
-  ["plusMinus", "+/-", "number"],
-  ["pim", "PIM", "number"],
-] as const;
-
-const goalieStatFields = [
-  ["gamesPlayed", "GP", "number"],
-  ["wins", "W", "number"],
-  ["losses", "L", "number"],
-  ["goalsAgainstAverage", "GAA", "decimal"],
-  ["savePercentage", "SV%", "decimal"],
-  ["shutouts", "SO", "number"],
-] as const;
-
-type StatField = (typeof playerStatFields | typeof goalieStatFields)[number];
 
 function parseStatInput(value: string, inputType: StatField[2]) {
   const parsed = inputType === "decimal" ? parseFloat(value) : parseInt(value);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-const formKeys = new WeakMap<object, string>();
+const formKeySymbol = Symbol("formKey");
 let formKeyCounter = 0;
 
 function formKey(item: object, prefix: string) {
-  let key = formKeys.get(item);
+  const keyedItem = item as { [formKeySymbol]?: string };
+  let key = keyedItem[formKeySymbol];
   if (!key) {
     formKeyCounter += 1;
     key = `${prefix}-${formKeyCounter}`;
-    formKeys.set(item, key);
+    Object.defineProperty(keyedItem, formKeySymbol, {
+      value: key,
+      enumerable: true,
+    });
   }
   return key;
 }
@@ -171,7 +142,10 @@ export default function PlayerForm({ player }: PlayerFormProps) {
   const [teamLogoUrl, setTeamLogoUrl] = useState(player?.teamLogoUrl ?? "");
 
   // Stats
-  const [currentStats, setCurrentStats] = useState<PlayerStats>(player?.currentStats ?? { ...emptyStats });
+  const [currentStats, setCurrentStats] = useState<PlayerStats>(() => ({
+    ...createEmptyStats(),
+    ...(player?.currentStats ?? {}),
+  }));
 
   // Season History
   const [seasonHistory, setSeasonHistory] = useState<SeasonStats[]>(
@@ -237,14 +211,9 @@ export default function PlayerForm({ player }: PlayerFormProps) {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const statFields = position === "Goalie" ? goalieStatFields : playerStatFields;
-
-  // Auto-generate slug from name
-  useEffect(() => {
-    if (!slugManual && firstName && lastName) {
-      setSlug(slugify(firstName, lastName));
-    }
-  }, [firstName, lastName, slugManual]);
+  const statFields = statFieldsForPosition(position);
+  const suggestedSeason = currentSeasonLabel();
+  const availableSeasons = seasonOptions(seasonHistory.map((season) => season.season));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -321,11 +290,29 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>First Name</label>
-            <input className={inputClass} value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+            <input
+              className={inputClass}
+              value={firstName}
+              onChange={(e) => {
+                const nextFirstName = e.target.value;
+                setFirstName(nextFirstName);
+                if (!slugManual) setSlug(slugify(nextFirstName, lastName));
+              }}
+              required
+            />
           </div>
           <div>
             <label className={labelClass}>Last Name</label>
-            <input className={inputClass} value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+            <input
+              className={inputClass}
+              value={lastName}
+              onChange={(e) => {
+                const nextLastName = e.target.value;
+                setLastName(nextLastName);
+                if (!slugManual) setSlug(slugify(firstName, nextLastName));
+              }}
+              required
+            />
           </div>
           <div>
             <label className={labelClass}>Position</label>
@@ -360,7 +347,7 @@ export default function PlayerForm({ player }: PlayerFormProps) {
             <input className={inputClass} value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="170 lbs" />
           </div>
           <div>
-            <label className={labelClass}>{position === "Goalie" ? "Catches" : "Shoots"}</label>
+            <label className={labelClass}>{isGoalie(position) ? "Catches" : "Shoots"}</label>
             <select className={selectClass} value={shoots} onChange={(e) => setShoots(e.target.value as "Left" | "Right")}>
               <option className={optionClass} value="Left">Left</option>
               <option className={optionClass} value="Right">Right</option>
@@ -558,8 +545,11 @@ export default function PlayerForm({ player }: PlayerFormProps) {
           Season History
         </summary>
         <div className="mt-4 space-y-4">
+        <datalist id="admin-season-options">
+          {availableSeasons.map((season) => <option key={season} value={season} />)}
+        </datalist>
         {seasonHistory.map((season, i) => (
-          <div key={i} className="p-4 bg-white/[0.03] rounded-lg space-y-3">
+          <div key={formKey(season, "season")} className="p-4 bg-white/[0.03] rounded-lg space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs text-white/40">Season {i + 1}</span>
               <button
@@ -575,13 +565,14 @@ export default function PlayerForm({ player }: PlayerFormProps) {
                 <label className={labelClass}>Season</label>
                 <input
                   className={inputClass}
+                  list="admin-season-options"
                   value={season.season}
                   onChange={(e) => {
                     const updated = [...seasonHistory];
                     updated[i] = { ...updated[i], season: e.target.value };
                     setSeasonHistory(updated);
                   }}
-                  placeholder="2024-25"
+                  placeholder={suggestedSeason}
                 />
               </div>
               <div>
@@ -637,7 +628,12 @@ export default function PlayerForm({ player }: PlayerFormProps) {
         ))}
         <button
           type="button"
-          onClick={() => setSeasonHistory((prev) => [...prev, { ...emptySeason, stats: { ...emptyStats } }])}
+          onClick={() => setSeasonHistory((prev) => [...prev, {
+            season: suggestedSeason,
+            team,
+            league,
+            stats: createEmptyStats(),
+          }])}
           className="text-xs text-white/40 hover:text-white/70 px-3 py-2 border border-dashed border-white/10 rounded-lg hover:border-white/30 transition-colors w-full"
         >
           + Add Season
